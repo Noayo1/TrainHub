@@ -500,4 +500,8 @@ export default function Feed() {
       <ProfileSidebar currentUser={currentUser} />
     </div>
   );
+
+  
 }
+
+

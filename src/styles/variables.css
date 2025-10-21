@@ -68,4 +68,11 @@
     /* Fonts */
     --font-heading: 'Poppins', sans-serif;
     --font-body: 'Inter', sans-serif;
+
+       @font-face {
+            font-family: 'PoppinsBlack';
+            src: url('../../public/fonts/Poppins-Black.woff2') format('woff2');
+            font-weight: 900;
+            font-style: normal;
+        }
 }

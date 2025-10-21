@@ -1,7 +1,6 @@
-// GroupsList.jsx
-// Responsibility: Display groups with join/leave/manage functionality
-
+// GroupsList.jsx - Updated with Advanced Search (3+ Parameters)
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function GroupsList({ 
   groups, 
@@ -13,11 +12,20 @@ export default function GroupsList({
   onApproveRequest,
   onRejectRequest
 }) {
+  const navigate = useNavigate();
+  
+  // Create group state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Search parameters (3+)
+  const [nameFilter, setNameFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all"); // all, public, private
+  const [minMembers, setMinMembers] = useState("");
+  const [maxMembers, setMaxMembers] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleCreateGroup = async (e) => {
     e.preventDefault();
@@ -35,32 +43,83 @@ export default function GroupsList({
     setShowCreateForm(false);
   };
 
-  const filteredGroups = groups.filter(group => {
-    const name = group.name || "";
-    return name.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
   const getGroupStatus = (group) => {
     if (!currentUser) return "none";
-    
     if (group.adminId === currentUser.uid) return "admin";
     if (group.members && group.members[currentUser.uid]) return "member";
     if (group.joinRequests && group.joinRequests[currentUser.uid]) return "pending";
     return "none";
   };
 
+  const getMemberCount = (group) => {
+    return group.members ? Object.keys(group.members).length : 0;
+  };
+
+  const handleGroupClick = (groupId) => {
+    navigate(`/group/${groupId}`);
+  };
+
+  // Advanced filtering with 3+ parameters
+  const filteredGroups = groups.filter(group => {
+    // Parameter 1: Name filter
+    if (nameFilter.trim()) {
+      const groupName = group.name || "";
+      const groupDesc = group.description || "";
+      if (!groupName.toLowerCase().includes(nameFilter.toLowerCase()) &&
+          !groupDesc.toLowerCase().includes(nameFilter.toLowerCase())) {
+        return false;
+      }
+    }
+    
+    // Parameter 2: Type filter (public/private)
+    if (typeFilter !== "all") {
+      if (typeFilter === "public" && group.isPrivate) return false;
+      if (typeFilter === "private" && !group.isPrivate) return false;
+    }
+    
+    // Parameter 3: Min members
+    if (minMembers !== "") {
+      const memberCount = getMemberCount(group);
+      if (memberCount < parseInt(minMembers)) return false;
+    }
+    
+    // Parameter 4: Max members
+    if (maxMembers !== "") {
+      const memberCount = getMemberCount(group);
+      if (memberCount > parseInt(maxMembers)) return false;
+    }
+    
+    return true;
+  });
+
+  const handleResetFilters = () => {
+    setNameFilter("");
+    setTypeFilter("all");
+    setMinMembers("");
+    setMaxMembers("");
+  };
+
   return (
     <div className="groups-list-container">
       <div className="groups-header">
         <h2>Groups</h2>
-        <button 
-          className="create-group-btn"
-          onClick={() => setShowCreateForm(!showCreateForm)}
-        >
-          {showCreateForm ? "Cancel" : "+ Create Group"}
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button 
+            className="toggle-search-btn"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            {showAdvanced ? " Hide Advanced Filters" : " Search"}
+          </button>
+          <button 
+            className="create-group-btn"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            {showCreateForm ? "Cancel" : "+ Create Group"}
+          </button>
+        </div>
       </div>
 
+      {/* Create Group Form */}
       {showCreateForm && (
         <form onSubmit={handleCreateGroup} className="create-group-form">
           <input
@@ -92,104 +151,203 @@ export default function GroupsList({
         </form>
       )}
 
-      <input
-        type="text"
-        className="search-groups-input"
-        placeholder="Search groups..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-
-      <div className="groups-grid">
-        {filteredGroups.map((group) => {
-          const status = getGroupStatus(group);
-          const memberCount = group.members ? Object.keys(group.members).length : 0;
-          const pendingCount = group.joinRequests ? Object.keys(group.joinRequests).length : 0;
-
-          return (
-            <div key={group.id} className="group-card">
-              <div className="group-icon">
-                {group.isPrivate ? "🔒" : "🌐"}
-              </div>
-              <h3 className="group-name">{group.name}</h3>
-              <p className="group-description">
-                {group.description || "No description"}
-              </p>
-              <p className="group-members">
-                👥 {memberCount} member{memberCount !== 1 ? "s" : ""}
-              </p>
-
-              {status === "admin" && (
-                <div className="admin-actions">
-                  {pendingCount > 0 && (
-                    <span className="pending-badge">
-                      {pendingCount} pending request{pendingCount !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                  <button 
-                    className="delete-group-btn"
-                    onClick={() => onDeleteGroup(group.id)}
-                  >
-                    Delete Group
-                  </button>
-                  {group.joinRequests && Object.keys(group.joinRequests).length > 0 && (
-                    <div className="join-requests">
-                      <h4>Join Requests:</h4>
-                      {Object.entries(group.joinRequests).map(([userId, request]) => (
-                        <div key={userId} className="request-item">
-                          <span>{request.userName}</span>
-                          <div className="request-actions">
-                            <button 
-                              className="approve-btn"
-                              onClick={() => onApproveRequest(group.id, userId)}
-                            >
-                              ✓
-                            </button>
-                            <button 
-                              className="reject-btn"
-                              onClick={() => onRejectRequest(group.id, userId)}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {status === "member" && status !== "admin" && (
-                <button 
-                  className="leave-group-btn"
-                  onClick={() => onLeaveGroup(group.id)}
-                >
-                  Leave Group
-                </button>
-              )}
-
-              {status === "pending" && (
-                <button className="pending-btn" disabled>
-                  Request Pending
-                </button>
-              )}
-
-              {status === "none" && (
-                <button 
-                  className="join-group-btn"
-                  onClick={() => onJoinGroup(group.id)}
-                >
-                  Join Group
-                </button>
-              )}
+      {/* Advanced Search Panel */}
+      {showAdvanced && (
+        <div className="advanced-search-panel">
+          <h3 className="search-panel-title">
+             Search Groups 
+          </h3>
+          
+          <div className="search-grid-inline">
+            {/* Parameter 1: Name/Description */}
+            <div className="search-field-inline">
+              <label>👥 Name/Description</label>
+              <input
+                type="text"
+                className="search-input-inline"
+                placeholder="Search groups..."
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+              />
             </div>
-          );
-        })}
-      </div>
 
-      {filteredGroups.length === 0 && (
-        <p className="no-groups">No groups found</p>
+            {/* Parameter 2: Type */}
+            <div className="search-field-inline">
+              <label> Type</label>
+              <select
+                className="search-select-inline"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+              >
+                <option value="all">All Types</option>
+                <option value="public"> Public</option>
+                <option value="private"> Private</option>
+              </select>
+            </div>
+
+            {/* Parameter 3: Min Members */}
+            <div className="search-field-inline">
+              <label> Min Members</label>
+              <input
+                type="number"
+                className="search-input-inline"
+                placeholder="Min..."
+                value={minMembers}
+                onChange={(e) => setMinMembers(e.target.value)}
+                min="0"
+              />
+            </div>
+
+            {/* Parameter 4: Max Members */}
+            <div className="search-field-inline">
+              <label>Max Members</label>
+              <input
+                type="number"
+                className="search-input-inline"
+                placeholder="Max..."
+                value={maxMembers}
+                onChange={(e) => setMaxMembers(e.target.value)}
+                min="0"
+              />
+            </div>
+
+            {/* Reset Button */}
+            <div className="search-field-inline">
+              <label>&nbsp;</label>
+              <button 
+                className="reset-filters-btn"
+                onClick={handleResetFilters}
+              >
+                 Reset
+              </button>
+            </div>
+          </div>
+
+          {/* Search Results Count */}
+          <div className="search-results-count">
+            <p>
+              Showing <strong>{filteredGroups.length}</strong> of <strong>{groups.length}</strong> groups
+              {(nameFilter || typeFilter !== "all" || minMembers || maxMembers) && (
+                <span className="filtered-indicator"> (filtered)</span>
+              )}
+            </p>
+          </div>
+        </div>
       )}
+
+      {/* Groups Grid */}
+      <div className="groups-grid">
+        {filteredGroups.length === 0 ? (
+          <div className="no-groups-found">
+            <p> No groups found matching your search criteria.</p>
+            {(nameFilter || typeFilter !== "all" || minMembers || maxMembers) && (
+              <button onClick={handleResetFilters}>Reset Filters</button>
+            )}
+          </div>
+        ) : (
+          filteredGroups.map((group) => {
+            const status = getGroupStatus(group);
+            const memberCount = getMemberCount(group);
+            const pendingCount = group.joinRequests ? Object.keys(group.joinRequests).length : 0;
+
+            return (
+              <div key={group.id} className="group-card">
+                <div 
+                  className="group-icon"
+                  onClick={() => handleGroupClick(group.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {group.isPrivate ? "🔒" : "🌐"}
+                </div>
+                
+                <h3 
+                  className="group-name"
+                  onClick={() => handleGroupClick(group.id)}
+                  style={{ 
+                    cursor: "pointer",
+                    transition: "color 0.2s ease"
+                  }}
+                  onMouseEnter={(e) => e.target.style.color = "#1da1f2"}
+                  onMouseLeave={(e) => e.target.style.color = "var(--text-primary)"}
+                >
+                  {group.name}
+                </h3>
+                
+                <p className="group-description">
+                  {group.description || "No description"}
+                </p>
+                <p className="group-members">
+                  👥 {memberCount} member{memberCount !== 1 ? "s" : ""}
+                </p>
+
+                {status === "admin" && (
+                  <div className="admin-actions">
+                    {pendingCount > 0 && (
+                      <span className="pending-badge">
+                        {pendingCount} pending request{pendingCount !== 1 ? "s" : ""}
+                      </span>
+                    )}
+                    <button 
+                      className="delete-group-btn"
+                      onClick={() => onDeleteGroup(group.id)}
+                    >
+                      Delete Group
+                    </button>
+                    {group.joinRequests && Object.keys(group.joinRequests).length > 0 && (
+                      <div className="join-requests">
+                        <h4>Join Requests:</h4>
+                        {Object.entries(group.joinRequests).map(([userId, request]) => (
+                          <div key={userId} className="request-item">
+                            <span>{request.userName}</span>
+                            <div className="request-actions">
+                              <button 
+                                className="approve-btn"
+                                onClick={() => onApproveRequest(group.id, userId)}
+                              >
+                                ✓
+                              </button>
+                              <button 
+                                className="reject-btn"
+                                onClick={() => onRejectRequest(group.id, userId)}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {status === "member" && status !== "admin" && (
+                  <button 
+                    className="leave-group-btn"
+                    onClick={() => onLeaveGroup(group.id)}
+                  >
+                    Leave Group
+                  </button>
+                )}
+
+                {status === "pending" && (
+                  <button className="pending-btn" disabled>
+                    Request Pending
+                  </button>
+                )}
+
+                {status === "none" && (
+                  <button 
+                    className="join-group-btn"
+                    onClick={() => onJoinGroup(group.id)}
+                  >
+                    Join Group
+                  </button>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }

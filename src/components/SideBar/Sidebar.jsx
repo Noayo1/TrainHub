@@ -26,11 +26,6 @@ export default function Sidebar({ currentView, onViewChange }) {
           <span className="menu-icon">👤</span>
           Groups
         </button>
-        <button 
-          className={`menu-item ${currentView === "settings" ? "active" : ""}`}
-          onClick={() => onViewChange("settings")}
-        >
-        </button>
       </div>
     </aside>
   );

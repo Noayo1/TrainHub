@@ -1,0 +1,338 @@
+/* Canvas.css - Drawing Tool Styling */
+@import './variables.css';
+
+/* ========================================
+   CANVAS DRAWING CONTAINER
+   ======================================== */
+
+.canvas-drawing-container {
+    background: var(--gradient-card);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    max-width: 650px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease;
+}
+
+/* ========================================
+   CANVAS HEADER
+   ======================================== */
+
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.canvas-header h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.canvas-close-btn {
+    width: 32px;
+    height: 32px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-full);
+    background: var(--accent-red);
+    color: white;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas-close-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(235, 80, 129, 0.4);
+}
+
+/* ========================================
+   CANVAS WRAPPER
+   ======================================== */
+
+.canvas-wrapper {
+    background: #ffffff;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--border-color);
+}
+
+.drawing-canvas {
+    display: block;
+    width: 100%;
+    height: 400px;
+    cursor: crosshair;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+}
+
+/* ========================================
+   CANVAS TOOLS
+   ======================================== */
+
+.canvas-tools {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    background: var(--bg-hover);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+}
+
+.tool-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.tool-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ========================================
+   TOOL BUTTONS
+   ======================================== */
+
+.tool-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.tool-btn {
+    flex: 1;
+    padding: 10px 16px;
+    background: var(--bg-dark);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.tool-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.tool-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-glow);
+}
+
+/* ========================================
+   COLOR PALETTE
+   ======================================== */
+
+.color-palette {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.color-btn {
+    width: 40px;
+    height: 40px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-sm);
+    border: 3px solid var(--border-color);
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.color-btn:hover {
+    transform: scale(1.15);
+    box-shadow: var(--shadow-md);
+}
+
+.color-btn.active {
+    border-color: var(--text-primary);
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(29, 161, 242, 0.3);
+}
+
+/* ========================================
+   BRUSH SIZE SLIDER
+   ======================================== */
+
+.size-slider {
+    width: 100%;
+    height: 8px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-full);
+    background: var(--bg-dark);
+    outline: none;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.size-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-md);
+}
+
+.size-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: var(--shadow-glow);
+}
+
+.size-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+/* ========================================
+   ACTION BUTTONS
+   ======================================== */
+
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.clear-btn,
+.cancel-btn,
+.save-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.clear-btn {
+    background: var(--bg-dark);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.clear-btn:hover {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+    transform: translateY(-2px);
+}
+
+.cancel-btn {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.cancel-btn:hover {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.save-btn {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.save-btn:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   CANVAS TIPS
+   ======================================== */
+
+.canvas-tips {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-dark);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--primary-color);
+}
+
+.canvas-tips p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    .canvas-drawing-container {
+        padding: var(--spacing-md);
+    }
+
+    .drawing-canvas {
+        height: 300px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .clear-btn,
+    .cancel-btn,
+    .save-btn {
+        width: 100%;
+    }
+
+    .color-palette {
+        justify-content: center;
+    }
+}

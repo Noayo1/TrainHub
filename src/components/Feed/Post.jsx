@@ -1,8 +1,9 @@
-// Post.jsx (Updated with Comments Integration)
-// Responsibility: Display post UI with comments section
-
+// Post.jsx - Updated with clickable author name
+// Add this import at the top:
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ⭐ ADD THIS
 import CommentSection from "../Comments/CommentSection";
+
 
 export default function Post({ 
   post, 
@@ -15,6 +16,7 @@ export default function Post({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
+  const navigate = useNavigate(); // ⭐ ADD THIS
 
   const handleLike = () => {
     onLikePost(post.id, post.likes, post.likedBy);
@@ -68,16 +70,37 @@ export default function Post({
       }))
     : [];
 
+  // ⭐ ADD THIS FUNCTION
+  const handleAuthorClick = () => {
+    console.log("Navigating to profile:", post.authorId);
+    navigate(`/profile/${post.authorId}`);
+  };
+
   return (
     <div className="post-card">
       {/* Post Header */}
       <div className="post-header">
         <div className="post-author-info">
-          <div className="author-avatar">
+          <div 
+            className="author-avatar"
+            onClick={handleAuthorClick} // ⭐ ADD THIS
+            style={{ cursor: "pointer" }} // ⭐ ADD THIS
+          >
             {getInitial(post.authorName)}
           </div>
           <div className="author-details">
-            <h3 className="author-name">{post.authorName}</h3>
+            <h3 
+              className="author-name"
+              onClick={handleAuthorClick} // ⭐ ADD THIS
+              style={{ 
+                cursor: "pointer",
+                transition: "color 0.2s ease" 
+              }}
+              onMouseEnter={(e) => e.target.style.color = "#1da1f2"}
+              onMouseLeave={(e) => e.target.style.color = "var(--text-primary)"}
+            >
+              {post.authorName}
+            </h3>
             <span className="post-time">
               {getTimeDifference(post.timestamp)}
             </span>
@@ -86,10 +109,10 @@ export default function Post({
         {isOwner && (
           <div className="post-actions-menu">
             <button className="edit-btn" onClick={handleEdit}>
-              ✏️ Edit
+               Edit
             </button>
             <button className="delete-btn" onClick={handleDelete}>
-              🗑️ Delete
+               Delete
             </button>
           </div>
         )}
@@ -97,27 +120,49 @@ export default function Post({
 
       {/* Post Content */}
       <div className="post-content">
-        {isEditing ? (
-          <div className="edit-section">
-            <textarea
-              className="edit-textarea"
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              rows="3"
-            />
-            <div className="edit-actions">
-              <button className="save-edit-btn" onClick={handleSaveEdit}>
-                Save
-              </button>
-              <button className="cancel-edit-btn" onClick={handleCancelEdit}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p>{post.content}</p>
-        )}
+  {isEditing ? (
+    <div className="edit-section">
+      <textarea
+        className="edit-textarea"
+        value={editContent}
+        onChange={(e) => setEditContent(e.target.value)}
+        rows="3"
+      />
+      <div className="edit-actions">
+        <button className="save-edit-btn" onClick={handleSaveEdit}>
+          Save
+        </button>
+        <button className="cancel-edit-btn" onClick={handleCancelEdit}>
+          Cancel
+        </button>
       </div>
+    </div>
+  ) : (
+    <>
+      <p>{post.content}</p>
+      
+      {/* ⭐ ADD THIS - Display Drawing if exists */}
+      {post.drawingImage && (
+        <div className="post-drawing">
+          <img 
+            src={post.drawingImage} 
+            alt="User drawing" 
+            style={{
+              width: "100%",
+              maxWidth: "600px",
+              borderRadius: "var(--radius-md)",
+              marginTop: "var(--spacing-md)",
+              border: "2px solid var(--border-color)",
+              boxShadow: "var(--shadow-md)"
+            }}
+          />
+        </div>
+      )}
+    </>
+        )}
+        
+        
+</div>
 
       {/* Post Footer */}
       <div className="post-footer">

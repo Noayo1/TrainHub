@@ -33,7 +33,7 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
   return (
     <div className="signin-wrapper">
       <div className="signin-container">
-        <h1>SPORTBOOK</h1>
+        <h1>TrainHub</h1>
 
         <form onSubmit={handleSignIn}>
           <Input
@@ -52,8 +52,6 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
             fullWidth
             disableUnderline
           />
-
-          {/* הצגת שגיאה */}
           {error && <p className="error-text">{error}</p>}
 
           <Button type="submit" variant="contained" fullWidth>

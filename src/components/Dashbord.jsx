@@ -1,23 +1,33 @@
-// Dashboard.jsx (Updated with User Initialization)
-// Responsibility: Handle authentication and initialize user data
+// Dashboard.jsx - SIMPLIFIED VERSION
+// Responsibility: Authentication and routing ONLY (like your lecturer's pattern)
+// Each view has its own container that manages data
 
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getDatabase, ref, set, get } from "firebase/database";
-import SignIn from "./Auth/SignIn";
-import SignUp from "./Auth/SignUp";
 import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "./firebase";
 import Feed from "./Feed/Feed";
+import ProfileContainer from "./Profile/ProfileContainer";
+import GroupContainer from "./groups/GroupContainer";
+import SignIn from "./Auth/SignIn";
+import SignUp from "./Auth/SignUp";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  const { userId, groupId } = useParams();
+  const navigate = useNavigate();
+  
+  // Determine view mode based on URL
+  const viewMode = groupId ? "group" : userId ? "profile" : "feed";
 
+  // Initialize user on auth change
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Initialize user data in database if not exists
         await initializeUserData(currentUser);
         setUser(currentUser);
       } else {
@@ -35,7 +45,6 @@ export default function Dashboard() {
     try {
       const snapshot = await get(userRef);
       if (!snapshot.exists()) {
-        // Create user data if it doesn't exist
         await set(userRef, {
           uid: currentUser.uid,
           email: currentUser.email,
@@ -54,7 +63,8 @@ export default function Dashboard() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      alert("User signed out successfully");
+      alert("Signed out successfully");
+      navigate("/");
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -79,6 +89,7 @@ export default function Dashboard() {
     <div>
       {user ? (
         <div>
+          {/* Top Navigation Bar */}
           <div style={{
             display: "flex",
             justifyContent: "space-between",
@@ -87,8 +98,17 @@ export default function Dashboard() {
             background: "var(--gradient-secondary)",
             borderBottom: "1px solid var(--border-color)"
           }}>
-            <h2 style={{ margin: 0, color: "var(--text-primary)" }}>
-              SPORTBOOK
+            <h2 
+              style={{ 
+                margin: 0,
+                fontFamily: "PoppinsBlack, sans-serif",
+                fontSize: "24px",
+                color: "var(--text-primary)",
+                cursor: "pointer"
+              }}
+              onClick={() => navigate("/")}
+            >
+              TrainHub
             </h2>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <span style={{ color: "var(--text-secondary)" }}>
@@ -111,7 +131,12 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-          <Feed />
+
+          {/* Main Content - Conditional Rendering */}
+          {/* Each view has its own container that manages data */}
+          {viewMode === "feed" && <Feed />}
+          {viewMode === "profile" && <ProfileContainer currentUser={user} />}
+          {viewMode === "group" && <GroupContainer currentUser={user} />}
         </div>
       ) : (
         <div>

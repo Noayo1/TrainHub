@@ -1,0 +1,546 @@
+/* GroupDetail.css - Group Detail Page Styling */
+@import './variables.css';
+
+/* ========================================
+   GROUP DETAIL CONTAINER
+   ======================================== */
+
+.group-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    animation: fadeIn 0.5s ease;
+}
+
+/* ========================================
+   BACK BUTTON
+   ======================================== */
+
+.back-button {
+    padding: 10px 20px;
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+    margin-bottom: var(--spacing-lg);
+}
+
+.back-button:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(-5px);
+}
+
+/* ========================================
+   GROUP HEADER CARD
+   ======================================== */
+
+.group-header-card {
+    background: var(--gradient-card);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-normal);
+}
+
+.group-header-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Group Cover */
+.group-cover {
+    height: 200px;
+    background: var(--gradient-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.group-icon-large {
+    width: 120px;
+    height: 120px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    border: 5px solid var(--bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    box-shadow: var(--shadow-lg);
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-normal);
+}
+
+.group-header-card:hover .group-icon-large {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Group Main Info */
+.group-main-info {
+    padding: var(--spacing-lg);
+}
+
+.group-details {
+    margin-bottom: var(--spacing-md);
+}
+
+.group-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.group-description {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+/* Badges */
+.group-badges {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.badge-private,
+.badge-public,
+.badge-admin,
+.badge-member {
+    display: inline-block;
+    padding: 6px 14px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.badge-private {
+    background: var(--accent-red);
+    color: white;
+}
+
+.badge-public {
+    background: var(--accent-green);
+    color: white;
+}
+
+.badge-admin {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+}
+
+.badge-member {
+    background: var(--gradient-secondary);
+    color: white;
+}
+
+/* ========================================
+   GROUP ACTIONS
+   ======================================== */
+
+.group-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.btn-delete-group,
+.btn-leave-group {
+    padding: 12px 24px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.btn-delete-group {
+    background: var(--accent-red);
+    color: white;
+}
+
+.btn-delete-group:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(235, 80, 129, 0.4);
+}
+
+.btn-leave-group {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-leave-group:hover {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   GROUP STATS
+   ======================================== */
+
+.group-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: var(--spacing-lg);
+    background: var(--bg-hover);
+    border-top: 1px solid var(--border-color);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ========================================
+   MEMBERS SECTION
+   ======================================== */
+
+.group-members-section {
+    background: var(--gradient-card);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.group-members-section h3 {
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: 20px;
+    color: var(--text-primary);
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.members-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--bg-hover);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.member-item:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.member-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-role {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ========================================
+   GROUP POST FORM
+   ======================================== */
+
+.group-post-form-card {
+    background: var(--gradient-card);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-normal);
+}
+
+.group-post-form-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.group-post-form-card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-primary);
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.group-post-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.group-post-textarea {
+    width: 100%;
+    padding: var(--spacing-md);
+    background: var(--bg-dark);
+    border: 2px solid var(--border-color);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 15px;
+    resize: vertical;
+    min-height: 100px;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.group-post-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.2);
+}
+
+.group-post-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.group-post-button {
+    align-self: flex-end;
+    padding: 12px 32px;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-md);
+}
+
+.group-post-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.group-post-button:active {
+    transform: translateY(0);
+}
+
+/* ========================================
+   GROUP POSTS SECTION
+   ======================================== */
+
+.group-posts-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.group-posts-section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    /* text-shadow - Required CSS3 Feature */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+.not-member-message,
+.no-posts-message {
+    background: var(--gradient-card);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    text-align: center;
+    border: 2px dashed var(--border-color);
+}
+
+.not-member-message p,
+.no-posts-message p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin: 0;
+}
+
+/* ========================================
+   LOADING & ERROR STATES
+   ======================================== */
+
+.group-detail-loading,
+.group-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    background: var(--gradient-card);
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    text-align: center;
+    margin: var(--spacing-lg) auto;
+    max-width: 600px;
+}
+
+.group-detail-loading h2,
+.group-not-found h2 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.group-not-found p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.group-not-found button {
+    padding: 12px 24px;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    /* border-radius - Required CSS3 Feature */
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    /* transition - Required CSS3 Feature */
+    transition: all var(--transition-fast);
+}
+
+.group-not-found button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    .group-detail-container {
+        padding: var(--spacing-md);
+    }
+
+    .group-cover {
+        height: 150px;
+    }
+
+    .group-icon-large {
+        width: 100px;
+        height: 100px;
+        font-size: 50px;
+    }
+
+    .group-title {
+        font-size: 26px;
+    }
+
+    .members-list {
+        grid-template-columns: 1fr;
+    }
+
+    .group-actions {
+        flex-direction: column;
+    }
+
+    .btn-delete-group,
+    .btn-leave-group {
+        width: 100%;
+    }
+
+    .group-stats {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .stat-item {
+        width: 100%;
+        padding: var(--spacing-md) 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+}

@@ -115,7 +115,7 @@
 }
 
 .new-post-title {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
     margin-bottom: var(--spacing-md);
     color: var(--text-primary);
@@ -609,3 +609,4 @@
         column-count: 1;
     }
 }
+
