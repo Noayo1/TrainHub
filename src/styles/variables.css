@@ -1,0 +1,71 @@
+/* variables.css - Design System Tokens */
+
+:root {
+    /* Twitter / X Inspired Palette */
+    --primary-color: #1da1f2;
+    /* Twitter Blue */
+    --primary-dark: #1991da;
+    /* Hover state */
+    --secondary-color: #15202b;
+    /* Dark background */
+    --secondary-dark: #0f1419;
+    /* Even darker for cards */
+
+    --accent-green: #17bf63;
+    /* Success / confirmation */
+    --accent-red: #e0245e;
+    /* Error / unlike */
+
+    /* Backgrounds */
+    --bg-dark: #0f1419;
+    /* Main app background */
+    --bg-card: #15202b;
+    /* Card background */
+    --bg-hover: #1e2732;
+    /* Hover background */
+
+    /* Text Colors */
+    --text-primary: #e7e9ea;
+    /* Main text */
+    --text-secondary: #8b98a5;
+    /* Muted text */
+    --text-muted: #5b7083;
+    /* Placeholder text */
+
+    /* Borders */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.2);
+
+    /* Gradients (subtle for buttons or highlights) */
+    --gradient-primary: linear-gradient(135deg, #1da1f2 0%, #1991da 100%);
+    --gradient-secondary: linear-gradient(135deg, #192734 0%, #22303c 100%);
+    --gradient-card: linear-gradient(145deg, #15202b 0%, #1e2732 100%);
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-full: 50%;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.15);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.25);
+    --shadow-glow: 0 0 12px rgba(29, 161, 242, 0.4);
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Fonts */
+    --font-heading: 'Poppins', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}

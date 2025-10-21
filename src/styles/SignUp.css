@@ -1,0 +1,178 @@
+@import './variables.css';
+
+.signup-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg-dark);
+    position: relative;
+        overflow: hidden;
+    }
+    
+    /* Animated Background Effect */
+    .signup-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: var(--gradient-secondary);
+        border-radius: 50%;
+        top: -300px;
+        left: -300px;
+        opacity: 0.1;
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    .signup-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        bottom: -250px;
+        right: -250px;
+        opacity: 0.1;
+        animation: pulse 4s ease-in-out infinite 2s;
+    }
+    
+    .signup-container {
+        width: 440px;
+        padding: 40px;
+        background: var(--gradient-card);
+        /* border-radius - Required CSS3 Feature */
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        position: relative;
+        z-index: 1;
+        animation: fadeIn 0.6s ease;
+    }
+    
+    .signup-container h1 {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 28px;
+        color: var(--text-primary);
+        margin-bottom: 30px;
+        text-align: center;
+        /* text-shadow - Required CSS3 Feature */
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+    }
+    
+    .signup-container form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+    
+    .signup-container form>div {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .signup-container input {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--bg-dark);
+        border: 2px solid var(--border-color);
+        /* border-radius - Required CSS3 Feature */
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-size: 15px;
+        /* transition - Required CSS3 Feature */
+        transition: all var(--transition-fast);
+    }
+    
+    .signup-container input:focus {
+        outline: none;
+        border-color: var(--accent-green);
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+    }
+    
+    .signup-container input::placeholder {
+        color: var(--text-muted);
+    }
+    
+    /* Error State for Inputs */
+    .MuiInputBase-root.error input {
+        border-color: var(--accent-red) !important;
+        background-color: rgba(231, 76, 60, 0.05);
+    }
+    
+    .signup-container button[type="submit"] {
+        width: 100%;
+        padding: 14px;
+        margin-top: 10px;
+        background: var(--gradient-secondary);
+        color: white;
+        border: none;
+        /* border-radius - Required CSS3 Feature */
+        border-radius: var(--radius-md);
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        /* transition - Required CSS3 Feature */
+        transition: all var(--transition-fast);
+        box-shadow: var(--shadow-md);
+        /* text-shadow - Required CSS3 Feature */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    .signup-container button[type="submit"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 78, 137, 0.4);
+    }
+    
+    .signup-container button[type="submit"]:active {
+        transform: translateY(0);
+    }
+    
+    .signup-container hr {
+        border: none;
+        border-top: 1px solid var(--border-color);
+        margin: 20px 0;
+    }
+    
+    .signup-wrapper p {
+        margin-top: 0;
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-align: center;
+    }
+    
+    .signup-wrapper p button {
+        background: none;
+        border: none;
+        color: var(--secondary-color);
+        font-weight: 600;
+        cursor: pointer;
+        /* transition - Required CSS3 Feature */
+        transition: all var(--transition-fast);
+    }
+    
+    .signup-wrapper p button:hover {
+        color: var(--secondary-dark);
+        text-decoration: underline;
+    }
+    
+    .error-text {
+        color: var(--accent-red) !important;
+        font-size: 13px;
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: rgba(231, 76, 60, 0.1);
+        /* border-radius - Required CSS3 Feature */
+        border-radius: var(--radius-sm);
+        border-left: 3px solid var(--accent-red);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 500px) {
+        .signup-container {
+            width: 90%;
+            padding: 30px 20px;
+        }
+    }
