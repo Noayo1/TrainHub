@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { auth } from "./firebase";
+import { auth } from "../firebase";
 import { Input, Button } from "@mui/material";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import "../styles/SignIn.css";
+import "../../styles/SignIn.css";
 
 export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
   const [email, setEmail] = useState("");

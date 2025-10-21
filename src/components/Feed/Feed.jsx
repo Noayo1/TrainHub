@@ -2,13 +2,13 @@
 // Responsibility: Container that manages data and passes callbacks down
 
 import { useState, useEffect } from "react";
-import { auth } from "./firebase";
+import { auth } from "../firebase";
 import { getDatabase, ref, onValue, push, update, remove } from "firebase/database";
-import Sidebar from "./Sidebar";
+import Sidebar from "../SideBar/Sidebar";
 import CreatePost from "./CreatePost";
 import PostList from "./PostList";
-import ProfileSidebar from "./ProfileSidebar";
-import "../styles/Feed.css";
+import ProfileSidebar from "../SideBar/ProfileSidebar";
+import "../../styles/Feed.css";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);

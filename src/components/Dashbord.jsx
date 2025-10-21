@@ -2,11 +2,11 @@
 // Remove redundant callback since onAuthStateChanged already handles user state
 
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import SignIn from "./SignIn";
-import SignUp from "./SignUp";
+import SignIn from "./Auth/SignIn";
+import SignUp from "./Auth/SignUp";
 import { useEffect, useState } from "react";
 import { auth } from "./firebase";
-import Feed from "./Feed";
+import Feed from "./Feed/Feed";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
