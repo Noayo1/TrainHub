@@ -1,25 +1,35 @@
-// Sidebar.jsx
-// Responsibility: Display left navigation menu only
+// Sidebar.jsx (Updated)
+// Responsibility: Display left navigation menu with view switching
 
-export default function Sidebar() {
+export default function Sidebar({ currentView, onViewChange }) {
   return (
     <aside className="feed-sidebar-left">
       <div className="sidebar-menu">
-        <button className="menu-item active">
+        <button 
+          className={`menu-item ${currentView === "home" ? "active" : ""}`}
+          onClick={() => onViewChange("home")}
+        >
           <span className="menu-icon">🏠</span>
           Home
         </button>
-        <button className="menu-item">
+        <button 
+          className={`menu-item ${currentView === "friends" ? "active" : ""}`}
+          onClick={() => onViewChange("friends")}
+        >
           <span className="menu-icon">👥</span>
           Friends
         </button>
-        <button className="menu-item">
+        <button 
+          className={`menu-item ${currentView === "groups" ? "active" : ""}`}
+          onClick={() => onViewChange("groups")}
+        >
           <span className="menu-icon">👤</span>
           Groups
         </button>
-        <button className="menu-item">
-          <span className="menu-icon">⚙️</span>
-          Settings
+        <button 
+          className={`menu-item ${currentView === "settings" ? "active" : ""}`}
+          onClick={() => onViewChange("settings")}
+        >
         </button>
       </div>
     </aside>

@@ -1,19 +1,26 @@
-// Post.jsx (Refactored)
-// Responsibility: Display post UI and handle user interactions via callbacks
+// Post.jsx (Updated with Comments Integration)
+// Responsibility: Display post UI with comments section
 
 import { useState } from "react";
+import CommentSection from "../Comments/CommentSection";
 
-export default function Post({ post, currentUser, onLikePost, onUpdatePost, onDeletePost }) {
+export default function Post({ 
+  post, 
+  currentUser, 
+  onLikePost, 
+  onUpdatePost, 
+  onDeletePost,
+  onAddComment,
+  onDeleteComment 
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
 
   const handleLike = () => {
-    // ✅ Delegate to parent via callback
     onLikePost(post.id, post.likes, post.likedBy);
   };
 
   const handleDelete = () => {
-    // ✅ Delegate to parent via callback
     onDeletePost(post.id);
   };
 
@@ -23,7 +30,6 @@ export default function Post({ post, currentUser, onLikePost, onUpdatePost, onDe
   };
 
   const handleSaveEdit = async () => {
-    // ✅ Delegate to parent via callback
     await onUpdatePost(post.id, editContent);
     setIsEditing(false);
     setEditContent("");
@@ -52,6 +58,15 @@ export default function Post({ post, currentUser, onLikePost, onUpdatePost, onDe
   };
 
   const isOwner = currentUser && currentUser.uid === post.authorId;
+
+  // Convert comments object to array
+  const commentsArray = post.comments 
+    ? Object.keys(post.comments).map(key => ({
+        id: key,
+        postId: post.id,
+        ...post.comments[key]
+      }))
+    : [];
 
   return (
     <div className="post-card">
@@ -114,10 +129,16 @@ export default function Post({ post, currentUser, onLikePost, onUpdatePost, onDe
         >
           ❤️ {post.likes}
         </button>
-        <button className="comment-btn">
-          💬 {post.comments || 0}
-        </button>
       </div>
+
+      {/* Comments Section */}
+      <CommentSection
+        postId={post.id}
+        comments={commentsArray}
+        currentUser={currentUser}
+        onAddComment={onAddComment}
+        onDeleteComment={onDeleteComment}
+      />
     </div>
   );
 }

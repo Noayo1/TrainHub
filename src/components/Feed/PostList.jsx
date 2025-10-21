@@ -1,9 +1,17 @@
-// PostList.jsx (Refactored)
-// Responsibility: Display list of posts and pass callbacks down
+// PostList.jsx (Updated with Comments)
+// Responsibility: Display list of posts and pass all callbacks down
 
 import Post from "./Post";
 
-export default function PostList({ posts, currentUser, onLikePost, onUpdatePost, onDeletePost }) {
+export default function PostList({ 
+  posts, 
+  currentUser, 
+  onLikePost, 
+  onUpdatePost, 
+  onDeletePost,
+  onAddComment,
+  onDeleteComment 
+}) {
   if (posts.length === 0) {
     return (
       <div className="posts-container">
@@ -24,6 +32,8 @@ export default function PostList({ posts, currentUser, onLikePost, onUpdatePost,
           onLikePost={onLikePost}
           onUpdatePost={onUpdatePost}
           onDeletePost={onDeletePost}
+          onAddComment={onAddComment}
+          onDeleteComment={onDeleteComment}
         />
       ))}
     </div>
