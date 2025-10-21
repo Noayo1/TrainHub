@@ -1,3 +1,4 @@
+@import './variables.css';
 
 .signin-wrapper {
     display: flex;
@@ -5,91 +6,179 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: #f0f2f5;
+    background: var(--bg-light);
+    position: relative;
+    overflow: hidden;
+}
 
+/* Animated Purple Background Effect */
+.signin-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    top: -300px;
+    left: -300px;
+    opacity: 0.15;
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.signin-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: var(--gradient-secondary);
+    border-radius: 50%;
+    bottom: -250px;
+    right: -250px;
+    opacity: 0.15;
+    animation: pulse 4s ease-in-out infinite 2s;
 }
 
 .signin-container {
-    width: 360px;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    padding: 40px;
+    background: var(--bg-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-purple);
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.6s ease;
+}
+
+/* Logo Styles */
+.signin-logo {
+    width: 180px;
+    height: auto;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.signin-logo:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.3));
 }
 
 .signin-container h1 {
-    font-family: "Poppins", sans-serif;
-    font-weight: 600;
-    color: #1c1e21;
-    margin-bottom: 20px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+    text-align: center;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .signin-container form {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 18px;
 }
 
 .signin-container input {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
     font-size: 15px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background: var(--bg-white);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
 }
 
 .signin-container input:focus {
     outline: none;
-    border-color: #1877f2;
-    box-shadow: 0 0 4px rgba(24, 119, 242, 0.3);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+    background: var(--bg-purple-light);
 }
 
-/* כפתור הכניסה */
+.signin-container input::placeholder {
+    color: var(--text-primary);
+}
+
+/* Sign In Button - Purple Theme */
 .signin-container button[type="submit"] {
-    background-color: #1877f2;
-    color: white;
+    background: var(--gradient-primary);
+    color: var(--text-white);
     border: none;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 14px;
+    border-radius: var(--radius-md);
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-purple);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .signin-container button[type="submit"]:hover {
-    background-color: #166fe0;
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.signin-container button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.signin-container hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 20px 0;
+    width: 100%;
 }
 
 .signin-wrapper p {
-    margin-top: 20px;
+    margin-top: 0;
     font-size: 14px;
-    color: #333;
+    color: var(--text-secondary);
     text-align: center;
 }
 
 .signin-wrapper p button {
     background: none;
     border: none;
-    color: #1877f2;
+    color: var(--primary-color);
     font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
+    transition: all var(--transition-fast);
 }
 
 .signin-wrapper p button:hover {
+    color: var(--primary-dark);
     text-decoration: underline;
 }
 
 .error-text {
-    color: #e74c3c !important;
+    color: var(--accent-red) !important;
     font-size: 13px;
-    margin-top: -5px;
-    margin-bottom: 10px;
-    text-align: left;
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent-red);
+}
+
+/* Responsive Design */
+@media (max-width: 500px) {
+    .signin-container {
+        width: 90%;
+        padding: 30px 20px;
+    }
+
+    .signin-logo {
+        width: 150px;
+    }
 }

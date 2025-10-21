@@ -1,14 +1,19 @@
-// Chat.jsx
-// Responsibility: Real-time chat using Firebase Realtime Database
-// Note: For true WebSocket implementation, you would use Socket.io on the server
+// Chat.jsx (Refactored)
+// Responsibility: Display chat UI and delegate message operations via callbacks
+// NO direct Firebase access - follows proper architecture
 
-import { useState, useEffect, useRef } from "react";
-import { getDatabase, ref, onValue, push, query, orderByChild, limitToLast } from "firebase/database";
+import { useState, useRef, useEffect } from "react";
 
-export default function Chat({ currentUser, recipientId, recipientName }) {
-  const [messages, setMessages] = useState([]);
+export default function Chat({ 
+  recipientId,
+  recipientName, 
+  messages, 
+  currentUser,
+  isOpen,
+  onToggleChat,
+  onSendMessage 
+}) {
   const [newMessage, setNewMessage] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -16,53 +21,18 @@ export default function Chat({ currentUser, recipientId, recipientName }) {
   };
 
   useEffect(() => {
-    if (!currentUser || !recipientId || !isOpen) return;
+    if (messages.length > 0) {
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [messages]);
 
-    const db = getDatabase();
-    // Create unique chat room ID (sorted to ensure consistency)
-    const chatRoomId = [currentUser.uid, recipientId].sort().join("_");
-    const chatRef = ref(db, `chats/${chatRoomId}`);
-    const messagesQuery = query(chatRef, orderByChild("timestamp"), limitToLast(50));
-
-    const unsubscribe = onValue(messagesQuery, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const messagesArray = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
-        setMessages(messagesArray);
-        setTimeout(scrollToBottom, 100);
-      } else {
-        setMessages([]);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [currentUser, recipientId, isOpen]);
-
-  const handleSendMessage = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    const db = getDatabase();
-    const chatRoomId = [currentUser.uid, recipientId].sort().join("_");
-    const chatRef = ref(db, `chats/${chatRoomId}`);
-
-    const message = {
-      text: newMessage,
-      senderId: currentUser.uid,
-      senderName: currentUser.displayName || currentUser.email.split("@")[0],
-      recipientId: recipientId,
-      timestamp: Date.now(),
-    };
-
-    try {
-      await push(chatRef, message);
-      setNewMessage("");
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
+    // ✅ Delegate to parent via callback
+    await onSendMessage(recipientId, newMessage);
+    setNewMessage("");
   };
 
   const getTimeDifference = (timestamp) => {
@@ -78,7 +48,7 @@ export default function Chat({ currentUser, recipientId, recipientName }) {
 
   if (!isOpen) {
     return (
-      <button className="open-chat-btn" onClick={() => setIsOpen(true)}>
+      <button className="open-chat-btn" onClick={() => onToggleChat(recipientId)}>
         💬 Chat with {recipientName}
       </button>
     );
@@ -88,7 +58,7 @@ export default function Chat({ currentUser, recipientId, recipientName }) {
     <div className="chat-container">
       <div className="chat-header">
         <h3>Chat with {recipientName}</h3>
-        <button className="close-chat-btn" onClick={() => setIsOpen(false)}>
+        <button className="close-chat-btn" onClick={() => onToggleChat(null)}>
           ✕
         </button>
       </div>
@@ -116,7 +86,7 @@ export default function Chat({ currentUser, recipientId, recipientName }) {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSendMessage} className="chat-input-form">
+      <form onSubmit={handleSubmit} className="chat-input-form">
         <input
           type="text"
           className="chat-input"

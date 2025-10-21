@@ -13,6 +13,7 @@ import GroupsList from "../groups/GroupsList";
 import "../../styles/Feed.css";
 import "../../styles/Comments.css";
 import "../../styles/Friends.css";
+import "../../styles/Groups.css";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
@@ -23,6 +24,8 @@ export default function Feed() {
   const [sentRequests, setSentRequests] = useState({});
   const [receivedRequests, setReceivedRequests] = useState({});
   const [groups, setGroups] = useState([]);
+  const [openChatId, setOpenChatId] = useState(null);
+  const [chatMessages, setChatMessages] = useState({});
 
   useEffect(() => {
     const user = auth.currentUser;

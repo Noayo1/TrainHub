@@ -2,24 +2,24 @@
 
 :root {
     /* Twitter / X Inspired Palette */
-    --primary-color: #1da1f2;
+    --primary-color: #50a2d4;
     /* Twitter Blue */
-    --primary-dark: #1991da;
+    --primary-dark: #3691c9;
     /* Hover state */
     --secondary-color: #15202b;
     /* Dark background */
-    --secondary-dark: #0f1419;
+    --secondary-dark: #1b2126;
     /* Even darker for cards */
 
     --accent-green: #17bf63;
     /* Success / confirmation */
-    --accent-red: #e0245e;
+    --accent-red: #eb5081;
     /* Error / unlike */
 
     /* Backgrounds */
-    --bg-dark: #0f1419;
+    --bg-dark: #1d262f;
     /* Main app background */
-    --bg-card: #15202b;
+    --bg-card: #2c333a;
     /* Card background */
     --bg-hover: #1e2732;
     /* Hover background */
@@ -27,7 +27,7 @@
     /* Text Colors */
     --text-primary: #e7e9ea;
     /* Main text */
-    --text-secondary: #8b98a5;
+    --text-secondary: #d7dade;
     /* Muted text */
     --text-muted: #5b7083;
     /* Placeholder text */
