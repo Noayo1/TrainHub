@@ -3,7 +3,22 @@
 
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 const app = express();
+const server = http.createServer(app);
+
+// Initialize Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: "*", // מאפשר חיבורים מכל מקור (לצורכי בדיקה)
+    methods: ["GET", "POST"],
+  },
+});
+
+// Initialize chat socket
+const initializeSocket = require("./sockets/chatSocket");
+initializeSocket(io);
 
 // Middleware
 app.use(cors());
@@ -14,11 +29,13 @@ app.use(express.urlencoded({ extended: true }));
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const groupRoutes = require("./routes/groupRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 // Connect Routes to API endpoints
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/groups", groupRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Basic test route
 app.get("/", (req, res) => {
@@ -36,7 +53,8 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`📍 http://localhost:${PORT}`);
+  console.log(`🔌 Socket.io ready for connections`);
 });
