@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import PostList from "../Feed/PostList";
 import "../../styles/UserProfile.css";
 
-export default function UserProfile({ 
+export default function UserProfile({
   // Data props (from parent)
   profileUser,
   userPosts,
@@ -14,7 +14,7 @@ export default function UserProfile({
   friends,
   sentRequests,
   loading,
-  
+
   // Callback props (to parent)
   onLikePost,
   onUpdatePost,
@@ -23,7 +23,8 @@ export default function UserProfile({
   onDeleteComment,
   onSendFriendRequest,
   onRemoveFriend,
-  onBack
+  onToggleChat,
+  onBack,
 }) {
   const navigate = useNavigate();
 
@@ -42,15 +43,15 @@ export default function UserProfile({
   const getJoinDate = (timestamp) => {
     if (!timestamp) return "Unknown";
     const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US", { 
-      year: "numeric", 
-      month: "long" 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
     });
   };
 
   const handleFriendAction = () => {
     const status = getFriendStatus();
-    
+
     if (status === "friends") {
       onRemoveFriend(profileUser.id);
     } else if (status === "none") {
@@ -71,9 +72,7 @@ export default function UserProfile({
       <div className="profile-not-found">
         <h2>⚠️ User Not Found</h2>
         <p>This user doesn't exist or has been removed.</p>
-        <button onClick={() => navigate("/")}>
-          Back to Home
-        </button>
+        <button onClick={() => navigate("/")}>Back to Home</button>
       </div>
     );
   }
@@ -91,17 +90,17 @@ export default function UserProfile({
       {/* Profile Header */}
       <div className="profile-header-card">
         <div className="profile-cover-photo" />
-        
+
         <div className="profile-main-info">
           <div className="profile-avatar-xl">
             {getInitial(profileUser.displayName || profileUser.email)}
           </div>
-          
+
           <div className="profile-details">
             <h1 className="profile-display-name">
               {profileUser.displayName || profileUser.email?.split("@")[0]}
             </h1>
-            
+
             <p className="profile-email">{profileUser.email}</p>
 
             {isOwnProfile && (
@@ -120,15 +119,25 @@ export default function UserProfile({
             {!isOwnProfile && (
               <>
                 {friendStatus === "friends" && (
-                  <button 
-                    className="btn-remove-friend"
-                    onClick={handleFriendAction}
-                  >
-                    Remove Friend
-                  </button>
+                  <>
+                    <button
+                      className="remove-friend-btn"
+                      onClick={handleFriendAction}
+                    >
+                      Remove Friend
+                    </button>
+
+                    {/* ✅ NEW: Message button */}
+                    <button
+                      className="message-friend-btn"
+                      onClick={() => onToggleChat(profileUser.id)}
+                    >
+                      💬 Send Message
+                    </button>
+                  </>
                 )}
                 {friendStatus === "none" && (
-                  <button 
+                  <button
                     className="btn-add-friend"
                     onClick={handleFriendAction}
                   >
@@ -143,7 +152,7 @@ export default function UserProfile({
               </>
             )}
             {isOwnProfile && (
-              <button 
+              <button
                 className="btn-edit-profile"
                 onClick={() => alert("Edit profile coming soon!")}
               >
@@ -161,12 +170,16 @@ export default function UserProfile({
           </div>
           <div className="stat-item">
             <span className="stat-number">
-              {profileUser.friends ? Object.keys(profileUser.friends).length : 0}
+              {profileUser.friends
+                ? Object.keys(profileUser.friends).length
+                : 0}
             </span>
             <span className="stat-label">Friends</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number">{getJoinDate(profileUser.createdAt)}</span>
+            <span className="stat-number">
+              {getJoinDate(profileUser.createdAt)}
+            </span>
             <span className="stat-label">Joined</span>
           </div>
         </div>
@@ -176,21 +189,22 @@ export default function UserProfile({
       <div className="profile-content">
         <div className="profile-posts-section">
           <h2 style={{ marginBottom: "20px" }}>
-            {isOwnProfile ? "Your Posts" : `${profileUser.displayName || "User"}'s Posts`}
+            {isOwnProfile
+              ? "Your Posts"
+              : `${profileUser.displayName || "User"}'s Posts`}
           </h2>
-          
+
           {userPosts.length === 0 ? (
             <div className="no-posts-message">
               <p>
-                {isOwnProfile 
-                  ? "You haven't posted anything yet." 
-                  : "This user hasn't posted anything yet."
-                }
+                {isOwnProfile
+                  ? "You haven't posted anything yet."
+                  : "This user hasn't posted anything yet."}
               </p>
             </div>
           ) : (
-            <PostList 
-              posts={userPosts} 
+            <PostList
+              posts={userPosts}
               currentUser={currentUser}
               onLikePost={onLikePost}
               onUpdatePost={onUpdatePost}

@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getDatabase, ref, onValue, update, remove, push } from "firebase/database";
 import UserProfile from "./UserProfile";
+import ChatContainer from "../Chat/ChatContainer"; // ✅ ADD THIS LINE
+
 
 export default function ProfileContainer({ currentUser }) {
   const { userId } = useParams();
@@ -17,6 +19,12 @@ export default function ProfileContainer({ currentUser }) {
   const [friends, setFriends] = useState({});
   const [sentRequests, setSentRequests] = useState({});
   const [loading, setLoading] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
+  
+   const handleToggleChat = (recipientId) => {
+    setChatOpen(recipientId !== null);
+  };
+
 
   // Load profile data
   useEffect(() => {
@@ -175,22 +183,36 @@ export default function ProfileContainer({ currentUser }) {
   };
 
   // Pass everything to display component via props
-  return (
-    <UserProfile
-      profileUser={profileUser}
-      userPosts={userPosts}
-      currentUser={currentUser}
-      friends={friends}
-      sentRequests={sentRequests}
-      loading={loading}
-      onLikePost={handleLikePost}
-      onUpdatePost={handleUpdatePost}
-      onDeletePost={handleDeletePost}
-      onAddComment={handleAddComment}
-      onDeleteComment={handleDeleteComment}
-      onSendFriendRequest={handleSendFriendRequest}
-      onRemoveFriend={handleRemoveFriend}
-      onBack={handleBack}
-    />
+return (
+    <>
+      <UserProfile
+        profileUser={profileUser}
+        userPosts={userPosts}
+        currentUser={currentUser}
+        friends={friends}
+        sentRequests={sentRequests}
+        loading={loading}
+        onLikePost={handleLikePost}
+        onUpdatePost={handleUpdatePost}
+        onDeletePost={handleDeletePost}
+        onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
+        onSendFriendRequest={handleSendFriendRequest}
+        onRemoveFriend={handleRemoveFriend}
+        onToggleChat={handleToggleChat}  // ✅ NEW: Pass chat handler
+        onBack={handleBack}
+      />
+      
+      {/* ✅ NEW: Chat component */}
+      {chatOpen && profileUser && profileUser.id !== currentUser.uid && (
+        <ChatContainer
+          currentUser={currentUser}
+          recipientId={profileUser.id}
+          recipientName={profileUser.displayName || profileUser.email?.split("@")[0]}
+          isOpen={chatOpen}
+          onToggleChat={handleToggleChat}
+        />
+      )}
+    </>
   );
 }

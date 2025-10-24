@@ -1,4 +1,4 @@
-// Dashboard.jsx - SIMPLIFIED VERSION
+// Dashboard.jsx - UPDATED WITH SOCKET INTEGRATION
 // Responsibility: Authentication and routing ONLY (like your lecturer's pattern)
 // Each view has its own container that manages data
 
@@ -7,20 +7,22 @@ import { getDatabase, ref, set, get } from "firebase/database";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "./firebase";
+import socketService from "../services/socketService"; // ✅ NEW: Import socket service
 import Feed from "./Feed/Feed";
 import ProfileContainer from "./Profile/ProfileContainer";
 import GroupContainer from "./groups/GroupContainer";
 import SignIn from "./Auth/SignIn";
 import SignUp from "./Auth/SignUp";
+import FloatingChat from "./Chat/FloatingChat"; // ✅ ADD THIS
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const { userId, groupId } = useParams();
   const navigate = useNavigate();
-  
+
   // Determine view mode based on URL
   const viewMode = groupId ? "group" : userId ? "profile" : "feed";
 
@@ -30,29 +32,44 @@ export default function Dashboard() {
       if (currentUser) {
         await initializeUserData(currentUser);
         setUser(currentUser);
+
+        // ✅ NEW: Connect to chat server when user logs in
+        socketService.connect(
+          currentUser.uid,
+          currentUser.displayName || currentUser.email.split("@")[0]
+        );
       } else {
         setUser(null);
+
+        // ✅ NEW: Disconnect from chat server when user logs out
+        socketService.disconnect();
       }
       setLoading(false);
     });
-    return () => unsub();
+
+    return () => {
+      unsub();
+      // ✅ NEW: Cleanup socket connection on component unmount
+      socketService.disconnect();
+    };
   }, []);
 
   const initializeUserData = async (currentUser) => {
     const db = getDatabase();
     const userRef = ref(db, `users/${currentUser.uid}`);
-    
+
     try {
       const snapshot = await get(userRef);
       if (!snapshot.exists()) {
         await set(userRef, {
           uid: currentUser.uid,
           email: currentUser.email,
-          displayName: currentUser.displayName || currentUser.email.split("@")[0],
+          displayName:
+            currentUser.displayName || currentUser.email.split("@")[0],
           createdAt: Date.now(),
           friends: {},
           sentRequests: {},
-          receivedRequests: {}
+          receivedRequests: {},
         });
       }
     } catch (error) {
@@ -62,6 +79,9 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     try {
+      // ✅ NEW: Disconnect from chat before signing out
+      socketService.disconnect();
+
       await signOut(auth);
       alert("Signed out successfully");
       navigate("/");
@@ -72,14 +92,16 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        background: "var(--bg-dark)",
-        color: "var(--text-primary)"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "var(--bg-dark)",
+          color: "var(--text-primary)",
+        }}
+      >
         <h2>Loading...</h2>
       </div>
     );
@@ -90,21 +112,23 @@ export default function Dashboard() {
       {user ? (
         <div>
           {/* Top Navigation Bar */}
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "16px 24px",
-            background: "var(--gradient-secondary)",
-            borderBottom: "1px solid var(--border-color)"
-          }}>
-            <h2 
-              style={{ 
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "16px 24px",
+              background: "var(--gradient-secondary)",
+              borderBottom: "1px solid var(--border-color)",
+            }}
+          >
+            <h2
+              style={{
                 margin: 0,
                 fontFamily: "PoppinsBlack, sans-serif",
                 fontSize: "24px",
                 color: "var(--text-primary)",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
               onClick={() => navigate("/")}
             >
@@ -114,7 +138,7 @@ export default function Dashboard() {
               <span style={{ color: "var(--text-secondary)" }}>
                 Welcome, {user.displayName || user.email}!
               </span>
-              <button 
+              <button
                 onClick={handleSignOut}
                 style={{
                   padding: "8px 16px",
@@ -124,7 +148,7 @@ export default function Dashboard() {
                   borderRadius: "var(--radius-md)",
                   fontWeight: "600",
                   cursor: "pointer",
-                  transition: "all 0.2s ease"
+                  transition: "all 0.2s ease",
                 }}
               >
                 Sign Out
@@ -137,6 +161,7 @@ export default function Dashboard() {
           {viewMode === "feed" && <Feed />}
           {viewMode === "profile" && <ProfileContainer currentUser={user} />}
           {viewMode === "group" && <GroupContainer currentUser={user} />}
+          <FloatingChat currentUser={user} />
         </div>
       ) : (
         <div>
