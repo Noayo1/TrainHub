@@ -1,24 +1,27 @@
-// FriendsList.jsx - Updated with Advanced Search (3+ Parameters)
+// FriendsList.jsx - Updated with Simple Search Bar + Advanced Button
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function FriendsList({ 
-  users, 
-  currentUser, 
-  friends, 
+export default function FriendsList({
+  users,
+  currentUser,
+  friends,
   sentRequests,
   receivedRequests,
-  onSendRequest, 
-  onAcceptRequest, 
+  onSendRequest,
+  onAcceptRequest,
   onRejectRequest,
-  onRemoveFriend 
+  onRemoveFriend,
 }) {
   const navigate = useNavigate();
-  
-  // Search parameters (3+)
+
+  // Simple search state
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Advanced search parameters (3+)
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all"); // all, friends, non-friends, pending
+  const [statusFilter, setStatusFilter] = useState("all");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const getInitial = (name) => {
@@ -36,35 +39,52 @@ export default function FriendsList({
     navigate(`/profile/${userId}`);
   };
 
-  // Advanced filtering with 3+ parameters
-  const filteredUsers = users.filter(user => {
+  // Filtering logic
+  const filteredUsers = users.filter((user) => {
     // Exclude current user
     if (user.id === currentUser?.uid) return false;
-    
-    // Parameter 1: Name filter
-    if (nameFilter.trim()) {
+
+    // Simple search (when advanced is closed)
+    if (!showAdvanced && searchQuery.trim()) {
       const userName = user.displayName || user.email?.split("@")[0] || "";
-      if (!userName.toLowerCase().includes(nameFilter.toLowerCase())) {
-        return false;
-      }
-    }
-    
-    // Parameter 2: Email filter
-    if (emailFilter.trim()) {
       const userEmail = user.email || "";
-      if (!userEmail.toLowerCase().includes(emailFilter.toLowerCase())) {
+      const query = searchQuery.toLowerCase();
+
+      if (
+        !userName.toLowerCase().includes(query) &&
+        !userEmail.toLowerCase().includes(query)
+      ) {
         return false;
       }
     }
-    
-    // Parameter 3: Status filter
-    if (statusFilter !== "all") {
-      const status = getFriendStatus(user.id);
-      if (statusFilter === "friends" && status !== "friends") return false;
-      if (statusFilter === "non-friends" && status !== "none") return false;
-      if (statusFilter === "pending" && status !== "pending") return false;
+
+    // Advanced search (when advanced is open)
+    if (showAdvanced) {
+      // Parameter 1: Name filter
+      if (nameFilter.trim()) {
+        const userName = user.displayName || user.email?.split("@")[0] || "";
+        if (!userName.toLowerCase().includes(nameFilter.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Parameter 2: Email filter
+      if (emailFilter.trim()) {
+        const userEmail = user.email || "";
+        if (!userEmail.toLowerCase().includes(emailFilter.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Parameter 3: Status filter
+      if (statusFilter !== "all") {
+        const status = getFriendStatus(user.id);
+        if (statusFilter === "friends" && status !== "friends") return false;
+        if (statusFilter === "non-friends" && status !== "none") return false;
+        if (statusFilter === "pending" && status !== "pending") return false;
+      }
     }
-    
+
     return true;
   });
 
@@ -78,27 +98,35 @@ export default function FriendsList({
     <div className="friends-list-container">
       <div className="friends-header">
         <h2>All Users</h2>
-        
-        {/* Advanced Search Toggle */}
-        <button 
-          className="toggle-search-btn"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-        >
-          {showAdvanced ? " Hide Advanced Filters" : "Search"}
-        </button>
+
+        {/* ✅ NEW: Search Bar with Advanced Button on the Right */}
+        <div className="search-bar-wrapper">
+          <input
+            type="text"
+            className="search-users-input"
+            placeholder=" Search users by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={showAdvanced}
+          />
+          <button
+            className="toggle-search-btn"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            {showAdvanced ? "✕ Hide Advanced" : " Advanced"}
+          </button>
+        </div>
       </div>
 
       {/* Advanced Search Panel */}
       {showAdvanced && (
         <div className="advanced-search-panel">
-          <h3 className="search-panel-title">
-            Search Users 
-          </h3>
-          
+          <h3 className="search-panel-title"> Advanced Search</h3>
+
           <div className="search-grid-inline">
             {/* Parameter 1: Name */}
             <div className="search-field-inline">
-              <label> Name</label>
+              <label>Name</label>
               <input
                 type="text"
                 className="search-input-inline"
@@ -110,7 +138,7 @@ export default function FriendsList({
 
             {/* Parameter 2: Email */}
             <div className="search-field-inline">
-              <label> Email</label>
+              <label>Email</label>
               <input
                 type="text"
                 className="search-input-inline"
@@ -138,11 +166,11 @@ export default function FriendsList({
             {/* Reset Button */}
             <div className="search-field-inline">
               <label>&nbsp;</label>
-              <button 
+              <button
                 className="reset-filters-btn"
                 onClick={handleResetFilters}
               >
-                 Reset
+                Reset
               </button>
             </div>
           </div>
@@ -150,7 +178,8 @@ export default function FriendsList({
           {/* Search Results Count */}
           <div className="search-results-count">
             <p>
-              Showing <strong>{filteredUsers.length}</strong> of <strong>{users.length - 1}</strong> users
+              Showing <strong>{filteredUsers.length}</strong> of{" "}
+              <strong>{users.length - 1}</strong> users
               {(nameFilter || emailFilter || statusFilter !== "all") && (
                 <span className="filtered-indicator"> (filtered)</span>
               )}
@@ -169,34 +198,36 @@ export default function FriendsList({
         ) : (
           filteredUsers.map((user) => {
             const status = getFriendStatus(user.id);
-            
+
             return (
               <div key={user.id} className="user-card">
-                <div 
+                <div
                   className="user-avatar-large"
                   onClick={() => handleUserClick(user.id)}
                   style={{ cursor: "pointer" }}
                 >
                   {getInitial(user.displayName || user.email)}
                 </div>
-                
-                <h3 
+
+                <h3
                   className="user-name"
                   onClick={() => handleUserClick(user.id)}
-                  style={{ 
+                  style={{
                     cursor: "pointer",
-                    transition: "color 0.2s ease"
+                    transition: "color 0.2s ease",
                   }}
-                  onMouseEnter={(e) => e.target.style.color = "#1da1f2"}
-                  onMouseLeave={(e) => e.target.style.color = "var(--text-primary)"}
+                  onMouseEnter={(e) => (e.target.style.color = "#1da1f2")}
+                  onMouseLeave={(e) =>
+                    (e.target.style.color = "var(--text-primary)")
+                  }
                 >
                   {user.displayName || user.email?.split("@")[0]}
                 </h3>
-                
+
                 <p className="user-email">{user.email}</p>
 
                 {status === "friends" && (
-                  <button 
+                  <button
                     className="remove-friend-btn"
                     onClick={() => onRemoveFriend(user.id)}
                   >
@@ -212,13 +243,13 @@ export default function FriendsList({
 
                 {status === "received" && (
                   <div className="request-actions">
-                    <button 
+                    <button
                       className="accept-btn"
                       onClick={() => onAcceptRequest(user.id)}
                     >
                       Accept
                     </button>
-                    <button 
+                    <button
                       className="reject-btn"
                       onClick={() => onRejectRequest(user.id)}
                     >
@@ -228,7 +259,7 @@ export default function FriendsList({
                 )}
 
                 {status === "none" && (
-                  <button 
+                  <button
                     className="add-friend-btn"
                     onClick={() => onSendRequest(user.id)}
                   >

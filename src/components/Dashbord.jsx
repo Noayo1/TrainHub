@@ -1,19 +1,18 @@
-// Dashboard.jsx - UPDATED WITH SOCKET INTEGRATION
-// Responsibility: Authentication and routing ONLY (like your lecturer's pattern)
-// Each view has its own container that manages data
+// Dashboard.jsx - FIXED VERSION
+// Responsibility: Authentication and routing
 
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { getDatabase, ref, set, get } from "firebase/database";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "./firebase";
-import socketService from "../services/socketService"; // ✅ NEW: Import socket service
+import socketService from "../services/socketService";
 import Feed from "./Feed/Feed";
 import ProfileContainer from "./Profile/ProfileContainer";
 import GroupContainer from "./groups/GroupContainer";
 import SignIn from "./Auth/SignIn";
 import SignUp from "./Auth/SignUp";
-import FloatingChat from "./Chat/FloatingChat"; // ✅ ADD THIS
+import FloatingChat from "./Chat/FloatingChat";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -33,7 +32,7 @@ export default function Dashboard() {
         await initializeUserData(currentUser);
         setUser(currentUser);
 
-        // ✅ NEW: Connect to chat server when user logs in
+        // Connect to chat server when user logs in
         socketService.connect(
           currentUser.uid,
           currentUser.displayName || currentUser.email.split("@")[0]
@@ -41,7 +40,7 @@ export default function Dashboard() {
       } else {
         setUser(null);
 
-        // ✅ NEW: Disconnect from chat server when user logs out
+        // Disconnect from chat server when user logs out
         socketService.disconnect();
       }
       setLoading(false);
@@ -49,7 +48,7 @@ export default function Dashboard() {
 
     return () => {
       unsub();
-      // ✅ NEW: Cleanup socket connection on component unmount
+      // Cleanup socket connection on component unmount
       socketService.disconnect();
     };
   }, []);
@@ -77,9 +76,16 @@ export default function Dashboard() {
     }
   };
 
+  // ✅ FIX: Add this callback function
+  const handleUserLoggedIn = async (loggedInUser) => {
+    console.log("✅ User logged in successfully:", loggedInUser.email);
+    // The onAuthStateChanged listener will handle the rest
+    // No need to manually set user here
+  };
+
   const handleSignOut = async () => {
     try {
-      // ✅ NEW: Disconnect from chat before signing out
+      // Disconnect from chat before signing out
       socketService.disconnect();
 
       await signOut(auth);
@@ -157,7 +163,6 @@ export default function Dashboard() {
           </div>
 
           {/* Main Content - Conditional Rendering */}
-          {/* Each view has its own container that manages data */}
           {viewMode === "feed" && <Feed />}
           {viewMode === "profile" && <ProfileContainer currentUser={user} />}
           {viewMode === "group" && <GroupContainer currentUser={user} />}
@@ -168,7 +173,10 @@ export default function Dashboard() {
           {showSignUp ? (
             <SignUp onSwitchToSignIn={() => setShowSignUp(false)} />
           ) : (
-            <SignIn onSwitchToSignUp={() => setShowSignUp(true)} />
+            <SignIn
+              onUserLoggedIn={handleUserLoggedIn} // ✅ FIX: Pass the callback
+              onSwitchToSignUp={() => setShowSignUp(true)}
+            />
           )}
         </div>
       )}

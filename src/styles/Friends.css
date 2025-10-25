@@ -29,8 +29,18 @@
     margin: 0;
 }
 
+/* ========================================
+   ✅ NEW: SEARCH BAR WRAPPER
+   ======================================== */
+
+.search-bar-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .search-users-input {
-    width: 100%;
+    flex: 1;
     padding: 12px 16px;
     background: var(--bg-dark);
     border: 2px solid var(--border-color);
@@ -44,6 +54,11 @@
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.2);
+}
+
+.search-users-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .search-users-input::placeholder {
@@ -221,11 +236,19 @@
         height: 60px;
         font-size: 28px;
     }
+
+    .search-bar-wrapper {
+        flex-direction: column;
+    }
+
+    .search-users-input,
+    .toggle-search-btn {
+        width: 100%;
+    }
 }
 
 /* ===========================================
-   ADD THIS TO BOTH Friends.css AND Groups.css
-   Inline Advanced Search Styling
+   ADVANCED SEARCH STYLING
    =========================================== */
 
 /* Toggle Search Button */
@@ -242,6 +265,7 @@
     /* transition - Required CSS3 Feature */
     transition: all var(--transition-fast);
     box-shadow: var(--shadow-sm);
+    white-space: nowrap;
 }
 
 .toggle-search-btn:hover {

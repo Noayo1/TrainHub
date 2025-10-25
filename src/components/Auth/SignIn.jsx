@@ -8,25 +8,46 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+
+    // Clear any previous errors
     setError("");
+    setLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // ✅ Success - clear form and proceed
+      setError("");
+      setEmail("");
+      setPassword("");
       onUserLoggedIn(userCredential.user);
     } catch (err) {
-      console.log(err);
+      console.error("Login error:", err);
+
+      // Handle specific Firebase auth errors
       if (err.code === "auth/user-not-found") {
         setError("No user found with this email address.");
       } else if (err.code === "auth/wrong-password") {
         setError("Incorrect password. Please try again.");
       } else if (err.code === "auth/invalid-email") {
         setError("Invalid email address format.");
+      } else if (err.code === "auth/invalid-credential") {
+        setError("Invalid email or password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many failed attempts. Please try again later.");
       } else {
-        setError("Login failed. Please try again.");
+        setError("Login failed. Please check your credentials and try again.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,28 +61,44 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(""); // Clear error when user starts typing
+            }}
             fullWidth
             disableUnderline
+            disabled={loading}
+            required
           />
           <Input
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError(""); // Clear error when user starts typing
+            }}
             fullWidth
             disableUnderline
+            disabled={loading}
+            required
           />
+
           {error && <p className="error-text">{error}</p>}
 
-          <Button type="submit" variant="contained" fullWidth>
-            Sign In
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={loading || !email || !password}
+          >
+            {loading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
 
         <p>
           Don't have an account?{" "}
-          <Button type="button" onClick={onSwitchToSignUp}>
+          <Button type="button" onClick={onSwitchToSignUp} disabled={loading}>
             Sign Up
           </Button>
         </p>
