@@ -1,4 +1,4 @@
-// Feed.jsx (FIXED - Updated with Comments, Navigation, and Private Post Filtering)
+// Feed.jsx (FIXED - Updated with 4-parameter handleCreatePost for media uploads)
 // Responsibility: Container that manages data and passes callbacks down
 
 import { useState, useEffect } from "react";
@@ -54,25 +54,21 @@ export default function Feed() {
         console.log("✅ Posts loaded:", postsArray.length);
       } else {
         setPosts([]);
-        console.log("⚠️ No posts found");
       }
     });
 
-    // Listen to users
+    // Listen to all users
     const usersRef = ref(db, "users");
     const unsubscribeUsers = onValue(usersRef, (snapshot) => {
       const data = snapshot.val();
-      console.log("👥 Users data:", data);
       if (data) {
         const usersArray = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
         }));
         setAllUsers(usersArray);
-        console.log("✅ Users loaded:", usersArray.length);
       } else {
         setAllUsers([]);
-        console.log("⚠️ No users found");
       }
     });
 
@@ -80,54 +76,59 @@ export default function Feed() {
     const groupsRef = ref(db, "groups");
     const unsubscribeGroups = onValue(groupsRef, (snapshot) => {
       const data = snapshot.val();
-      console.log("👥 Groups data:", data);
       if (data) {
         const groupsArray = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
         }));
         setGroups(groupsArray);
-        console.log("✅ Groups loaded:", groupsArray.length);
       } else {
         setGroups([]);
-        console.log("⚠️ No groups found");
       }
     });
 
-    // Listen to friend relationships
-    const friendsRef = ref(db, `users/${user.uid}/friends`);
-    const unsubscribeFriends = onValue(friendsRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log("👫 Friends data:", data);
-      setFriends(data || {});
-    });
+    // Listen to current user's friends
+    if (user) {
+      const friendsRef = ref(db, `users/${user.uid}/friends`);
+      const unsubscribeFriends = onValue(friendsRef, (snapshot) => {
+        const data = snapshot.val();
+        console.log("👥 Friends:", data);
+        setFriends(data || {});
+      });
 
-    const sentRequestsRef = ref(db, `users/${user.uid}/sentRequests`);
-    const unsubscribeSent = onValue(sentRequestsRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log("📤 Sent requests:", data);
-      setSentRequests(data || {});
-    });
+      const sentRef = ref(db, `users/${user.uid}/sentRequests`);
+      const unsubscribeSent = onValue(sentRef, (snapshot) => {
+        const data = snapshot.val();
+        console.log("📤 Sent requests:", data);
+        setSentRequests(data || {});
+      });
 
-    const receivedRequestsRef = ref(db, `users/${user.uid}/receivedRequests`);
-    const unsubscribeReceived = onValue(receivedRequestsRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log("📥 Received requests:", data);
-      setReceivedRequests(data || {});
-    });
+      const receivedRef = ref(db, `users/${user.uid}/receivedRequests`);
+      const unsubscribeReceived = onValue(receivedRef, (snapshot) => {
+        const data = snapshot.val();
+        console.log("📥 Received requests:", data);
+        setReceivedRequests(data || {});
+      });
 
-    // CLEANUP: Return all unsubscribe functions
+      // CLEANUP: Return all unsubscribe functions
+      return () => {
+        unsubscribePosts();
+        unsubscribeUsers();
+        unsubscribeGroups();
+        unsubscribeFriends();
+        unsubscribeSent();
+        unsubscribeReceived();
+      };
+    }
+
     return () => {
       unsubscribePosts();
       unsubscribeUsers();
       unsubscribeGroups();
-      unsubscribeFriends();
-      unsubscribeSent();
-      unsubscribeReceived();
     };
   }, []);
 
-  // ✅ NEW: Filter posts based on private group membership
+  // ✅ Filter posts based on private group membership
   useEffect(() => {
     if (currentUser && posts.length >= 0) {
       const filtered = posts.filter((post) => {
@@ -169,9 +170,16 @@ export default function Feed() {
   }, [posts, groups, currentUser]);
 
   // ===== POST OPERATIONS =====
-  const handleCreatePost = async (content) => {
-    if (!content.trim()) {
-      alert("Post content cannot be empty");
+  // ✅ FIXED: Accept 4 parameters for media uploads (images, videos, drawings)
+  const handleCreatePost = async (
+    newPostContent,
+    drawingImage,
+    imageUrls,
+    videoUrl
+  ) => {
+    // ✅ Allow posts with ONLY media (text is optional)
+    if (!newPostContent?.trim() && !drawingImage && !imageUrls && !videoUrl) {
+      alert("Please add some content, media, or a drawing!");
       return;
     }
 
@@ -179,7 +187,10 @@ export default function Feed() {
     const postsRef = ref(db, "posts");
 
     const newPost = {
-      content: content,
+      content: newPostContent || "", // ✅ Can be empty (optional text)
+      drawingImage: drawingImage || null, // ✅ Canvas drawing (Base64)
+      imageUrls: imageUrls || null, // ✅ Array of Firebase Storage URLs
+      videoUrl: videoUrl || null, // ✅ Single Firebase Storage URL
       authorId: currentUser.uid,
       authorEmail: currentUser.email,
       authorName: currentUser.displayName || currentUser.email.split("@")[0],
@@ -190,11 +201,13 @@ export default function Feed() {
     };
 
     try {
+      console.log("💾 Saving post:", newPost);
       await push(postsRef, newPost);
       console.log("✅ Post created successfully");
     } catch (error) {
       console.error("❌ Error creating post:", error);
       alert("Failed to create post: " + error.message);
+      throw error;
     }
   };
 
@@ -290,9 +303,10 @@ export default function Feed() {
       return;
 
     const db = getDatabase();
+    const commentRef = ref(db, `posts/${postId}/comments/${commentId}`);
 
     try {
-      await remove(ref(db, `posts/${postId}/comments/${commentId}`));
+      await remove(commentRef);
       console.log("✅ Comment deleted successfully");
     } catch (error) {
       console.error("❌ Error deleting comment:", error);
@@ -507,18 +521,22 @@ export default function Feed() {
     }
   };
 
+  // RENDER
+  if (!currentUser) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="feed-container">
       <Sidebar currentView={currentView} onViewChange={setCurrentView} />
 
-      <main className="feed-main">
+      <div className="feed-main">
         {currentView === "home" && (
           <>
             <CreatePost
               currentUser={currentUser}
               onCreatePost={handleCreatePost}
             />
-
             <PostList
               posts={filteredPosts}
               currentUser={currentUser}
@@ -557,7 +575,7 @@ export default function Feed() {
             onRejectRequest={handleRejectJoinRequest}
           />
         )}
-      </main>
+      </div>
 
       <ProfileSidebar currentUser={currentUser} />
     </div>
