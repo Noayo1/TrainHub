@@ -1,9 +1,16 @@
-// Feed.jsx (FIXED - Updated with Comments and Navigation)
+// Feed.jsx (FIXED - Updated with Comments, Navigation, and Private Post Filtering)
 // Responsibility: Container that manages data and passes callbacks down
 
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import { getDatabase, ref, onValue, push, update, remove } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  push,
+  update,
+  remove,
+} from "firebase/database";
 import Sidebar from "../SideBar/Sidebar";
 import CreatePost from "./CreatePost";
 import PostList from "./PostList";
@@ -17,6 +24,7 @@ import "../../styles/Groups.css";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]); // ✅ NEW: Filtered posts
   const [currentUser, setCurrentUser] = useState(null);
   const [currentView, setCurrentView] = useState("home");
   const [allUsers, setAllUsers] = useState([]);
@@ -28,13 +36,6 @@ export default function Feed() {
   useEffect(() => {
     const user = auth.currentUser;
     setCurrentUser(user);
-
-    if (!user) {
-      console.error("❌ No user logged in!");
-      return;
-    }
-
-    console.log("✅ Current user:", user.uid, user.email);
 
     const db = getDatabase();
 
@@ -93,7 +94,7 @@ export default function Feed() {
       }
     });
 
-    // Listen to friend relationships (only if user exists)
+    // Listen to friend relationships
     const friendsRef = ref(db, `users/${user.uid}/friends`);
     const unsubscribeFriends = onValue(friendsRef, (snapshot) => {
       const data = snapshot.val();
@@ -125,6 +126,47 @@ export default function Feed() {
       unsubscribeReceived();
     };
   }, []);
+
+  // ✅ NEW: Filter posts based on private group membership
+  useEffect(() => {
+    if (currentUser && posts.length >= 0) {
+      const filtered = posts.filter((post) => {
+        // If post doesn't have a groupId, it's a regular post - always show
+        if (!post.groupId) {
+          return true;
+        }
+
+        // Find the group this post belongs to
+        const postGroup = groups.find((g) => g.id === post.groupId);
+
+        // If group doesn't exist anymore, don't show the post
+        if (!postGroup) {
+          console.log(`🚫 Post ${post.id} - Group not found`);
+          return false;
+        }
+
+        // If group is private, only show to members
+        if (postGroup.isPrivate) {
+          const isMember =
+            postGroup.members && postGroup.members[currentUser.uid];
+          if (!isMember) {
+            console.log(`🔒 Post ${post.id} - Private group, user not member`);
+          }
+          return isMember;
+        }
+
+        // If group is public, show to everyone
+        return true;
+      });
+
+      console.log(
+        `🔍 Filtered ${posts.length} posts to ${filtered.length} visible posts`
+      );
+      setFilteredPosts(filtered);
+    } else {
+      setFilteredPosts(posts);
+    }
+  }, [posts, groups, currentUser]);
 
   // ===== POST OPERATIONS =====
   const handleCreatePost = async (content) => {
@@ -159,11 +201,12 @@ export default function Feed() {
   const handleLikePost = async (postId, currentLikes, likedBy) => {
     const db = getDatabase();
     const postRef = ref(db, `posts/${postId}`);
-    
+
     const hasLiked = likedBy && likedBy[currentUser.uid];
 
     try {
       if (hasLiked) {
+        // Unlike
         const updatedLikedBy = { ...likedBy };
         delete updatedLikedBy[currentUser.uid];
         await update(postRef, {
@@ -171,6 +214,7 @@ export default function Feed() {
           likedBy: updatedLikedBy,
         });
       } else {
+        // Like
         await update(postRef, {
           likes: currentLikes + 1,
           likedBy: { ...likedBy, [currentUser.uid]: true },
@@ -242,13 +286,13 @@ export default function Feed() {
   };
 
   const handleDeleteComment = async (postId, commentId) => {
-    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+    if (!window.confirm("Are you sure you want to delete this comment?"))
+      return;
 
     const db = getDatabase();
-    const commentRef = ref(db, `posts/${postId}/comments/${commentId}`);
 
     try {
-      await remove(commentRef);
+      await remove(ref(db, `posts/${postId}/comments/${commentId}`));
       console.log("✅ Comment deleted successfully");
     } catch (error) {
       console.error("❌ Error deleting comment:", error);
@@ -259,18 +303,19 @@ export default function Feed() {
   // ===== FRIEND OPERATIONS =====
   const handleSendFriendRequest = async (recipientId) => {
     const db = getDatabase();
-    
+
     try {
       await update(ref(db, `users/${currentUser.uid}/sentRequests`), {
-        [recipientId]: true
+        [recipientId]: true,
       });
 
       await update(ref(db, `users/${recipientId}/receivedRequests`), {
         [currentUser.uid]: {
           userName: currentUser.displayName || currentUser.email.split("@")[0],
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       });
+
       console.log("✅ Friend request sent");
     } catch (error) {
       console.error("❌ Error sending friend request:", error);
@@ -280,17 +325,25 @@ export default function Feed() {
 
   const handleAcceptFriendRequest = async (senderId) => {
     const db = getDatabase();
-    
+
     try {
+      // Add both users as friends
       await update(ref(db, `users/${currentUser.uid}/friends`), {
-        [senderId]: true
-      });
-      await update(ref(db, `users/${senderId}/friends`), {
-        [currentUser.uid]: true
+        [senderId]: true,
       });
 
-      await remove(ref(db, `users/${currentUser.uid}/receivedRequests/${senderId}`));
-      await remove(ref(db, `users/${senderId}/sentRequests/${currentUser.uid}`));
+      await update(ref(db, `users/${senderId}/friends`), {
+        [currentUser.uid]: true,
+      });
+
+      // Remove the requests
+      await remove(
+        ref(db, `users/${currentUser.uid}/receivedRequests/${senderId}`)
+      );
+      await remove(
+        ref(db, `users/${senderId}/sentRequests/${currentUser.uid}`)
+      );
+
       console.log("✅ Friend request accepted");
     } catch (error) {
       console.error("❌ Error accepting friend request:", error);
@@ -300,14 +353,18 @@ export default function Feed() {
 
   const handleRejectFriendRequest = async (senderId) => {
     const db = getDatabase();
-    
+
     try {
-      await remove(ref(db, `users/${currentUser.uid}/receivedRequests/${senderId}`));
-      await remove(ref(db, `users/${senderId}/sentRequests/${currentUser.uid}`));
+      await remove(
+        ref(db, `users/${currentUser.uid}/receivedRequests/${senderId}`)
+      );
+      await remove(
+        ref(db, `users/${senderId}/sentRequests/${currentUser.uid}`)
+      );
       console.log("✅ Friend request rejected");
     } catch (error) {
       console.error("❌ Error rejecting friend request:", error);
-      alert("Failed to reject request");
+      alert("Failed to reject friend request: " + error.message);
     }
   };
 
@@ -315,7 +372,7 @@ export default function Feed() {
     if (!window.confirm("Are you sure you want to remove this friend?")) return;
 
     const db = getDatabase();
-    
+
     try {
       await remove(ref(db, `users/${currentUser.uid}/friends/${friendId}`));
       await remove(ref(db, `users/${friendId}/friends/${currentUser.uid}`));
@@ -359,7 +416,7 @@ export default function Feed() {
   };
 
   const handleJoinGroup = async (groupId) => {
-    const group = groups.find(g => g.id === groupId);
+    const group = groups.find((g) => g.id === groupId);
     if (!group) {
       alert("Group not found");
       return;
@@ -369,17 +426,20 @@ export default function Feed() {
 
     try {
       if (group.isPrivate) {
+        // Private group: Send join request
         await update(ref(db, `groups/${groupId}/joinRequests`), {
           [currentUser.uid]: {
-            userName: currentUser.displayName || currentUser.email.split("@")[0],
-            timestamp: Date.now()
-          }
+            userName:
+              currentUser.displayName || currentUser.email.split("@")[0],
+            timestamp: Date.now(),
+          },
         });
         alert("Join request sent!");
         console.log("✅ Join request sent for private group");
       } else {
+        // Public group: Join directly
         await update(ref(db, `groups/${groupId}/members`), {
-          [currentUser.uid]: true
+          [currentUser.uid]: true,
         });
         alert("You joined the group!");
         console.log("✅ Joined public group");
@@ -394,7 +454,7 @@ export default function Feed() {
     if (!window.confirm("Are you sure you want to leave this group?")) return;
 
     const db = getDatabase();
-    
+
     try {
       await remove(ref(db, `groups/${groupId}/members/${currentUser.uid}`));
       console.log("✅ Left group");
@@ -408,7 +468,7 @@ export default function Feed() {
     if (!window.confirm("Are you sure you want to delete this group?")) return;
 
     const db = getDatabase();
-    
+
     try {
       await remove(ref(db, `groups/${groupId}`));
       console.log("✅ Group deleted");
@@ -420,11 +480,13 @@ export default function Feed() {
 
   const handleApproveJoinRequest = async (groupId, userId) => {
     const db = getDatabase();
-    
+
     try {
+      // Add user to members
       await update(ref(db, `groups/${groupId}/members`), {
-        [userId]: true
+        [userId]: true,
       });
+      // Remove from join requests
       await remove(ref(db, `groups/${groupId}/joinRequests/${userId}`));
       console.log("✅ Join request approved");
     } catch (error) {
@@ -435,7 +497,7 @@ export default function Feed() {
 
   const handleRejectJoinRequest = async (groupId, userId) => {
     const db = getDatabase();
-    
+
     try {
       await remove(ref(db, `groups/${groupId}/joinRequests/${userId}`));
       console.log("✅ Join request rejected");
@@ -452,13 +514,13 @@ export default function Feed() {
       <main className="feed-main">
         {currentView === "home" && (
           <>
-            <CreatePost 
-              currentUser={currentUser} 
+            <CreatePost
+              currentUser={currentUser}
               onCreatePost={handleCreatePost}
             />
-            
-            <PostList 
-              posts={posts} 
+
+            <PostList
+              posts={filteredPosts}
               currentUser={currentUser}
               onLikePost={handleLikePost}
               onUpdatePost={handleUpdatePost}
@@ -500,8 +562,4 @@ export default function Feed() {
       <ProfileSidebar currentUser={currentUser} />
     </div>
   );
-
-  
 }
-
-

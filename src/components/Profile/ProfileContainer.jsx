@@ -1,18 +1,24 @@
-// ProfileContainer.jsx - CONTAINER COMPONENT
-// Responsibility: Fetch and manage profile data (like MainScreen)
+// ProfileContainer.jsx - UPDATED with Profile Update Support
+// Responsibility: Fetch and manage profile data
 // Follows lecturer's pattern: Container manages data, Display shows it
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getDatabase, ref, onValue, update, remove, push } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  update,
+  remove,
+  push,
+} from "firebase/database";
 import UserProfile from "./UserProfile";
-import ChatContainer from "../Chat/ChatContainer"; // ✅ ADD THIS LINE
-
+import ChatContainer from "../Chat/ChatContainer";
 
 export default function ProfileContainer({ currentUser }) {
   const { userId } = useParams();
   const navigate = useNavigate();
-  
+
   // Local state for this container
   const [profileUser, setProfileUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
@@ -20,11 +26,10 @@ export default function ProfileContainer({ currentUser }) {
   const [sentRequests, setSentRequests] = useState({});
   const [loading, setLoading] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
-  
-   const handleToggleChat = (recipientId) => {
+
+  const handleToggleChat = (recipientId) => {
     setChatOpen(recipientId !== null);
   };
-
 
   // Load profile data
   useEffect(() => {
@@ -50,7 +55,7 @@ export default function ProfileContainer({ currentUser }) {
           id: key,
           ...data[key],
         }));
-        const filtered = allPosts.filter(post => post.authorId === userId);
+        const filtered = allPosts.filter((post) => post.authorId === userId);
         filtered.sort((a, b) => b.timestamp - a.timestamp);
         setUserPosts(filtered);
       } else {
@@ -152,13 +157,13 @@ export default function ProfileContainer({ currentUser }) {
     const db = getDatabase();
     try {
       await update(ref(db, `users/${currentUser.uid}/sentRequests`), {
-        [recipientId]: true
+        [recipientId]: true,
       });
       await update(ref(db, `users/${recipientId}/receivedRequests`), {
         [currentUser.uid]: {
           userName: currentUser.displayName || currentUser.email.split("@")[0],
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       });
       alert("Friend request sent!");
     } catch (error) {
@@ -178,12 +183,19 @@ export default function ProfileContainer({ currentUser }) {
     }
   };
 
+  // ✅ NEW: Handle profile update
+  const handleUpdateProfile = async (updates) => {
+    // Profile is already updated in EditProfileModal
+    // This just confirms the update
+    console.log("Profile updated:", updates);
+  };
+
   const handleBack = () => {
     navigate("/");
   };
 
   // Pass everything to display component via props
-return (
+  return (
     <>
       <UserProfile
         profileUser={profileUser}
@@ -199,16 +211,19 @@ return (
         onDeleteComment={handleDeleteComment}
         onSendFriendRequest={handleSendFriendRequest}
         onRemoveFriend={handleRemoveFriend}
-        onToggleChat={handleToggleChat}  // ✅ NEW: Pass chat handler
+        onToggleChat={handleToggleChat}
+        onUpdateProfile={handleUpdateProfile}
         onBack={handleBack}
       />
-      
-      {/* ✅ NEW: Chat component */}
+
+      {/* Chat component */}
       {chatOpen && profileUser && profileUser.id !== currentUser.uid && (
         <ChatContainer
           currentUser={currentUser}
           recipientId={profileUser.id}
-          recipientName={profileUser.displayName || profileUser.email?.split("@")[0]}
+          recipientName={
+            profileUser.displayName || profileUser.email?.split("@")[0]
+          }
           isOpen={chatOpen}
           onToggleChat={handleToggleChat}
         />

@@ -1,9 +1,11 @@
-// UserProfile.jsx - CORRECTED
-// Responsibility: PURE DISPLAY COMPONENT (like ExpenseItem)
+// UserProfile.jsx - WITH COVER PHOTO (Original Design Restored)
+// Responsibility: PURE DISPLAY COMPONENT
 // Receives ALL data via props, calls parent via callbacks
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PostList from "../Feed/PostList";
+import EditProfileModal from "./EditProfileModal";
 import "../../styles/UserProfile.css";
 
 export default function UserProfile({
@@ -24,9 +26,11 @@ export default function UserProfile({
   onSendFriendRequest,
   onRemoveFriend,
   onToggleChat,
+  onUpdateProfile,
   onBack,
 }) {
   const navigate = useNavigate();
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const getInitial = (name) => {
     return name ? name.charAt(0).toUpperCase() : "U";
@@ -49,6 +53,25 @@ export default function UserProfile({
     });
   };
 
+  const formatLifeStatus = (status) => {
+    const statusMap = {
+      single: "Single",
+      "in-relationship": "In a Relationship",
+      divorced: "Divorced",
+      widowed: "Widowed",
+    };
+    return statusMap[status] || status;
+  };
+
+  const formatActivityLevel = (level) => {
+    const levelMap = {
+      beginner: "Beginner",
+      amateur: "Amateur",
+      professional: "Professional",
+    };
+    return levelMap[level] || level;
+  };
+
   const handleFriendAction = () => {
     const status = getFriendStatus();
 
@@ -57,6 +80,14 @@ export default function UserProfile({
     } else if (status === "none") {
       onSendFriendRequest(profileUser.id);
     }
+  };
+
+  const handleEditProfile = () => {
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = (updates) => {
+    onUpdateProfile(updates);
   };
 
   if (loading) {
@@ -87,14 +118,24 @@ export default function UserProfile({
         ← Back
       </button>
 
-      {/* Profile Header */}
+      {/* ✅ Profile Header WITH COVER PHOTO (Restored) */}
       <div className="profile-header-card">
+        {/* ✅ Cover Photo - RESTORED */}
         <div className="profile-cover-photo" />
 
         <div className="profile-main-info">
-          <div className="profile-avatar-xl">
-            {getInitial(profileUser.displayName || profileUser.email)}
-          </div>
+          {/* ✅ Profile Picture or Default Avatar */}
+          {profileUser.profilePictureUrl ? (
+            <img
+              src={profileUser.profilePictureUrl}
+              alt="Profile"
+              className="profile-avatar-xl-image"
+            />
+          ) : (
+            <div className="profile-avatar-xl">
+              {getInitial(profileUser.displayName || profileUser.email)}
+            </div>
+          )}
 
           <div className="profile-details">
             <h1 className="profile-display-name">
@@ -127,7 +168,6 @@ export default function UserProfile({
                       Remove Friend
                     </button>
 
-                    {/* ✅ NEW: Message button */}
                     <button
                       className="message-friend-btn"
                       onClick={() => onToggleChat(profileUser.id)}
@@ -152,11 +192,8 @@ export default function UserProfile({
               </>
             )}
             {isOwnProfile && (
-              <button
-                className="btn-edit-profile"
-                onClick={() => alert("Edit profile coming soon!")}
-              >
-                ✏️ Edit Profile
+              <button className="btn-edit-profile" onClick={handleEditProfile}>
+                Edit Profile
               </button>
             )}
           </div>
@@ -183,6 +220,70 @@ export default function UserProfile({
             <span className="stat-label">Joined</span>
           </div>
         </div>
+
+        {/* Additional Profile Info - Sports & Personal Details */}
+        {(profileUser.favoriteSport ||
+          profileUser.activityLevel ||
+          profileUser.lifeStatus ||
+          profileUser.workoutType ||
+          profileUser.favoriteTeam ||
+          profileUser.fitnessGoal) && (
+          <div className="profile-additional-info">
+            <h3>About</h3>
+            <div className="info-grid">
+              {profileUser.lifeStatus && (
+                <div className="info-item">
+                  <span className="info-label">Status:</span>
+                  <span className="info-value">
+                    {formatLifeStatus(profileUser.lifeStatus)}
+                  </span>
+                </div>
+              )}
+              {profileUser.dateOfBirth && (
+                <div className="info-item">
+                  <span className="info-label">🎂 Birthday:</span>
+                  <span className="info-value">
+                    {new Date(profileUser.dateOfBirth).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+              {profileUser.favoriteSport && (
+                <div className="info-item">
+                  <span className="info-label">Favorite Sport:</span>
+                  <span className="info-value">
+                    {profileUser.favoriteSport}
+                  </span>
+                </div>
+              )}
+              {profileUser.activityLevel && (
+                <div className="info-item">
+                  <span className="info-label">Activity Level:</span>
+                  <span className="info-value">
+                    {formatActivityLevel(profileUser.activityLevel)}
+                  </span>
+                </div>
+              )}
+              {profileUser.workoutType && (
+                <div className="info-item">
+                  <span className="info-label">Workout Type:</span>
+                  <span className="info-value">{profileUser.workoutType}</span>
+                </div>
+              )}
+              {profileUser.favoriteTeam && (
+                <div className="info-item">
+                  <span className="info-label">Favorite Team:</span>
+                  <span className="info-value">{profileUser.favoriteTeam}</span>
+                </div>
+              )}
+            </div>
+            {profileUser.fitnessGoal && (
+              <div className="fitness-goal-section">
+                <span className="info-label"> Fitness Goal:</span>
+                <p className="fitness-goal-text">{profileUser.fitnessGoal}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Posts Section */}
@@ -215,6 +316,16 @@ export default function UserProfile({
           )}
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && isOwnProfile && (
+        <EditProfileModal
+          currentUser={currentUser}
+          profileData={profileUser}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
     </div>
   );
 }

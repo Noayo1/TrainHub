@@ -1,7 +1,8 @@
-// Post.jsx - COMPLETE with Firebase Storage Support
-import { useState } from "react";
+// Post.jsx - UPDATED with Profile Picture Support
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CommentSection from "../Comments/CommentSection";
+import { getDatabase, ref, get } from "firebase/database";
+import "../../styles/Post.css";
 
 export default function Post({
   post,
@@ -13,40 +14,124 @@ export default function Post({
   onDeleteComment,
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState("");
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [editContent, setEditContent] = useState(post.content || "");
+  const [commentText, setCommentText] = useState("");
+  const [groupInfo, setGroupInfo] = useState(null);
+  const [authorProfile, setAuthorProfile] = useState(null); // ✅ NEW: Author profile data
+  const [commentAuthors, setCommentAuthors] = useState({}); // ✅ NEW: Comment authors profiles
   const navigate = useNavigate();
 
-  const handleLike = () => {
-    onLikePost(post.id, post.likes, post.likedBy);
-  };
+  // ✅ Load author profile picture
+  useEffect(() => {
+    if (post.authorId) {
+      const db = getDatabase();
+      const userRef = ref(db, `users/${post.authorId}`);
+      get(userRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            setAuthorProfile(snapshot.val());
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading author profile:", error);
+        });
+    }
+  }, [post.authorId]);
 
-  const handleDelete = () => {
-    onDeletePost(post.id);
-  };
+  // ✅ Load group info if post has groupId
+  useEffect(() => {
+    if (post.groupId) {
+      const db = getDatabase();
+      const groupRef = ref(db, `groups/${post.groupId}`);
+      get(groupRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            setGroupInfo(snapshot.val());
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading group info:", error);
+        });
+    }
+  }, [post.groupId]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (post.comments) {
+      const db = getDatabase();
+      const commentIds = Object.keys(post.comments);
+      const uniqueAuthorIds = [
+        ...new Set(commentIds.map((id) => post.comments[id].authorId)),
+      ];
+
+      uniqueAuthorIds.forEach((authorId) => {
+        if (!commentAuthors[authorId]) {
+          const userRef = ref(db, `users/${authorId}`);
+          get(userRef)
+            .then((snapshot) => {
+              if (snapshot.exists()) {
+                setCommentAuthors((prev) => ({
+                  ...prev,
+                  [authorId]: snapshot.val(),
+                }));
+              }
+            })
+            .catch((error) => {
+              console.error("Error loading comment author profile:", error);
+            });
+        }
+      });
+    }
+  }, [post.comments]);
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditContent(post.content);
-  };
-
-  const handleSaveEdit = async () => {
-    await onUpdatePost(post.id, editContent);
-    setIsEditing(false);
-    setEditContent("");
+    setEditContent(post.content || "");
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditContent("");
+    setEditContent(post.content || "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (
+      !editContent.trim() &&
+      !post.drawingImage &&
+      !post.imageUrls &&
+      !post.videoUrl
+    ) {
+      alert("Post cannot be empty");
+      return;
+    }
+
+    await onUpdatePost(post.id, editContent);
+    setIsEditing(false);
+  };
+
+  const handleDelete = async () => {
+    await onDeletePost(post.id);
+  };
+
+  const handleLike = () => {
+    onLikePost(post.id, post.likes || 0, post.likedBy || {});
+  };
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    onAddComment(post.id, commentText);
+    setCommentText("");
   };
 
   const getTimeDifference = (timestamp) => {
     const now = Date.now();
     const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
 
     if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
     if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
@@ -74,7 +159,15 @@ export default function Post({
     navigate(`/profile/${post.authorId}`);
   };
 
-  // ✅ Check for media
+  // Handle group name click
+  const handleGroupClick = (e) => {
+    e.stopPropagation();
+    if (post.groupId) {
+      navigate(`/group/${post.groupId}`);
+    }
+  };
+
+  // Check for media
   const hasImages =
     post.imageUrls &&
     Array.isArray(post.imageUrls) &&
@@ -82,14 +175,7 @@ export default function Post({
   const hasVideo = post.videoUrl && post.videoUrl.trim() !== "";
   const hasDrawing = post.drawingImage;
 
-  console.log("📷 Post media check:", {
-    postId: post.id,
-    hasImages,
-    hasVideo,
-    hasDrawing,
-    imageUrls: post.imageUrls,
-    videoUrl: post.videoUrl,
-  });
+  const hasLiked = post.likedBy && post.likedBy[currentUser?.uid];
 
   return (
     <div className="post-card">
@@ -101,7 +187,20 @@ export default function Post({
             onClick={handleAuthorClick}
             style={{ cursor: "pointer" }}
           >
-            {getInitial(post.authorName)}
+            {authorProfile?.profilePictureUrl ? (
+              <img
+                src={authorProfile.profilePictureUrl}
+                alt={post.authorName}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+            ) : (
+              getInitial(post.authorName)
+            )}
           </div>
           <div className="author-details">
             <h3
@@ -121,15 +220,27 @@ export default function Post({
             <span className="post-time">
               {getTimeDifference(post.timestamp)}
             </span>
+
+            {/* Group info badge */}
+            {groupInfo && (
+              <div
+                className="post-group-badge"
+                onClick={handleGroupClick}
+                title="Click to view group"
+              >
+                {groupInfo.isPrivate ? "🔒" : "🌐"} Posted in{" "}
+                <span className="group-name-link">{groupInfo.name}</span>
+              </div>
+            )}
           </div>
         </div>
         {isOwner && (
           <div className="post-actions-menu">
             <button className="edit-btn" onClick={handleEdit}>
-              ✏️ Edit
+              Edit
             </button>
             <button className="delete-btn" onClick={handleDelete}>
-              🗑️ Delete
+              Delete
             </button>
           </div>
         )}
@@ -138,130 +249,62 @@ export default function Post({
       {/* Post Content */}
       <div className="post-content">
         {isEditing ? (
-          <div className="edit-section">
+          <div className="edit-post-form">
             <textarea
               className="edit-textarea"
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              rows="3"
+              rows="4"
             />
             <div className="edit-actions">
               <button className="save-edit-btn" onClick={handleSaveEdit}>
-                Save
+                ✓ Save
               </button>
               <button className="cancel-edit-btn" onClick={handleCancelEdit}>
-                Cancel
+                ✕ Cancel
               </button>
             </div>
           </div>
         ) : (
           <>
-            {/* Text Content */}
-            {post.content && post.content.trim() && <p>{post.content}</p>}
+            {post.content && <p className="post-text">{post.content}</p>}
 
-            {/* Canvas Drawing */}
+            {/* Drawing */}
             {hasDrawing && (
-              <div
-                className="post-drawing"
-                style={{ marginTop: post.content ? "var(--spacing-md)" : "0" }}
-              >
+              <div className="post-media-container">
                 <img
                   src={post.drawingImage}
-                  alt="User drawing"
-                  style={{
-                    width: "100%",
-                    maxWidth: "600px",
-                    borderRadius: "var(--radius-md)",
-                    border: "2px solid var(--border-color)",
-                    boxShadow: "var(--shadow-md)",
-                  }}
+                  alt="Canvas drawing"
+                  className="post-image"
                 />
               </div>
             )}
 
-            {/* ✅ FIREBASE STORAGE IMAGES */}
+            {/* Images */}
             {hasImages && (
               <div
-                className={`post-images-grid ${
+                className={`post-media-container ${
                   post.imageUrls.length === 1
-                    ? "single"
-                    : post.imageUrls.length === 2
-                    ? "two"
-                    : ""
+                    ? "single-image"
+                    : "multiple-images"
                 }`}
-                style={{
-                  marginTop:
-                    post.content || hasDrawing ? "var(--spacing-md)" : "0",
-                }}
               >
-                {post.imageUrls.slice(0, 4).map((imageUrl, index) => (
-                  <div
+                {post.imageUrls.map((url, index) => (
+                  <img
                     key={index}
-                    className="post-image-item"
-                    onClick={() => setSelectedImageIndex(index)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <img
-                      src={imageUrl}
-                      alt={`Post image ${index + 1}`}
-                      className="post-grid-image"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                    {post.imageUrls.length > 4 && index === 3 && (
-                      <div
-                        className="more-images-overlay"
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background: "rgba(0, 0, 0, 0.7)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontSize: "32px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        +{post.imageUrls.length - 4}
-                      </div>
-                    )}
-                  </div>
+                    src={url}
+                    alt={`Post content ${index + 1}`}
+                    className="post-image"
+                  />
                 ))}
               </div>
             )}
 
-            {/* ✅ FIREBASE STORAGE VIDEO */}
+            {/* Video */}
             {hasVideo && (
-              <div
-                className="post-media"
-                style={{
-                  marginTop:
-                    post.content || hasDrawing || hasImages
-                      ? "var(--spacing-md)"
-                      : "0",
-                }}
-              >
-                <video
-                  src={post.videoUrl}
-                  controls
-                  className="post-video"
-                  preload="metadata"
-                  style={{
-                    width: "100%",
-                    maxHeight: "500px",
-                    display: "block",
-                    background: "black",
-                    borderRadius: "var(--radius-md)",
-                  }}
-                >
+              <div className="post-media-container">
+                <video className="post-video" controls>
+                  <source src={post.videoUrl} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>
@@ -270,150 +313,81 @@ export default function Post({
         )}
       </div>
 
-      {/* Post Footer */}
-      <div className="post-footer">
+      {/* Post Actions */}
+      <div className="post-actions">
         <button
-          className={`like-btn ${
-            post.likedBy && post.likedBy[currentUser?.uid] ? "liked" : ""
-          }`}
+          className={`like-btn ${hasLiked ? "liked" : ""}`}
           onClick={handleLike}
         >
-          ❤️ {post.likes}
+          {hasLiked ? "❤️" : "🤍"} {post.likes || 0}
         </button>
+        <span className="comment-count">
+          💬 {commentsArray.length} comment
+          {commentsArray.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {/* Comments Section */}
-      <CommentSection
-        postId={post.id}
-        comments={commentsArray}
-        currentUser={currentUser}
-        onAddComment={onAddComment}
-        onDeleteComment={onDeleteComment}
-      />
+      <div className="comments-section">
+        {commentsArray.map((comment) => {
+          const commentAuthor = commentAuthors[comment.authorId];
 
-      {/* Image Lightbox/Modal */}
-      {selectedImageIndex !== null && hasImages && (
-        <div
-          className="image-modal"
-          onClick={() => setSelectedImageIndex(null)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.95)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            animation: "fadeIn 0.3s ease",
-          }}
-        >
-          <div
-            style={{
-              position: "relative",
-              maxWidth: "90vw",
-              maxHeight: "90vh",
-            }}
-          >
-            <button
-              onClick={() => setSelectedImageIndex(null)}
-              style={{
-                position: "absolute",
-                top: "-50px",
-                right: "0",
-                width: "40px",
-                height: "40px",
-                background: "rgba(255, 255, 255, 0.2)",
-                color: "white",
-                border: "none",
-                borderRadius: "50%",
-                fontSize: "24px",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              ✕
-            </button>
-            <img
-              src={post.imageUrls[selectedImageIndex]}
-              alt={`Full size ${selectedImageIndex + 1}`}
-              style={{
-                maxWidth: "100%",
-                maxHeight: "90vh",
-                objectFit: "contain",
-                borderRadius: "var(--radius-md)",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                bottom: "-40px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                color: "white",
-                fontSize: "14px",
-                fontWeight: "600",
-                background: "rgba(0, 0, 0, 0.5)",
-                padding: "8px 16px",
-                borderRadius: "20px",
-              }}
-            >
-              {selectedImageIndex + 1} / {post.imageUrls.length}
+          return (
+            <div key={comment.id} className="comment-item">
+              {/* ✅ UPDATED: Show profile picture in comments */}
+              <div className="comment-avatar">
+                {commentAuthor?.profilePictureUrl ? (
+                  <img
+                    src={commentAuthor.profilePictureUrl}
+                    alt={comment.authorName}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                    }}
+                  />
+                ) : (
+                  getInitial(comment.authorName)
+                )}
+              </div>
+              <div className="comment-content">
+                <div className="comment-header">
+                  <span className="comment-author">{comment.authorName}</span>
+                  <span className="comment-time">
+                    {getTimeDifference(comment.timestamp)}
+                  </span>
+                </div>
+                <p className="comment-text">{comment.text}</p>
+              </div>
+              {currentUser && currentUser.uid === comment.authorId && (
+                <button
+                  className="delete-comment-btn"
+                  onClick={() => onDeleteComment(post.id, comment.id)}
+                >
+                  🗑️
+                </button>
+              )}
             </div>
-            {selectedImageIndex > 0 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedImageIndex(selectedImageIndex - 1);
-                }}
-                style={{
-                  position: "absolute",
-                  left: "-70px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: "50px",
-                  height: "50px",
-                  background: "rgba(255, 255, 255, 0.2)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "50%",
-                  fontSize: "32px",
-                  cursor: "pointer",
-                }}
-              >
-                ‹
-              </button>
-            )}
-            {selectedImageIndex < post.imageUrls.length - 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedImageIndex(selectedImageIndex + 1);
-                }}
-                style={{
-                  position: "absolute",
-                  right: "-70px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: "50px",
-                  height: "50px",
-                  background: "rgba(255, 255, 255, 0.2)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "50%",
-                  fontSize: "32px",
-                  cursor: "pointer",
-                }}
-              >
-                ›
-              </button>
-            )}
+          );
+        })}
+
+        {/* Add Comment Form */}
+        <form onSubmit={handleCommentSubmit} className="add-comment-form">
+          <div className="comment-input-wrapper">
+            <input
+              type="text"
+              className="comment-input"
+              placeholder="Write a comment..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+            />
+            <button type="submit" className="comment-submit-btn">
+              Send
+            </button>
           </div>
-        </div>
-      )}
+        </form>
+      </div>
     </div>
   );
 }

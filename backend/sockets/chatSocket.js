@@ -9,12 +9,12 @@ const activeUsers = new Map();
 
 const initializeSocket = (io) => {
   io.on("connection", (socket) => {
-    console.log(`✅ User connected: ${socket.id}`);
+    console.log(`User connected: ${socket.id}`);
 
     // User joins with their userId
     socket.on("user-connected", (userId) => {
       activeUsers.set(userId, socket.id);
-      console.log(`👤 User ${userId} joined with socket ${socket.id}`);
+      console.log(`User ${userId} joined with socket ${socket.id}`);
 
       // Broadcast to all users that someone connected
       io.emit("user-status", {
@@ -65,7 +65,7 @@ const initializeSocket = (io) => {
         socket.emit("message-sent", newMessage.toJSON());
 
         console.log(
-          `📨 Message from ${senderName} to ${receiverName}: ${message}`
+          `Message from ${senderName} to ${receiverName}: ${message}`
         );
       } catch (error) {
         console.error("Error sending message:", error);
@@ -150,7 +150,7 @@ const initializeSocket = (io) => {
 
     // Disconnect
     socket.on("disconnect", () => {
-      console.log(`❌ User disconnected: ${socket.id}`);
+      console.log(`User disconnected: ${socket.id}`);
 
       // Remove from active users
       let disconnectedUserId = null;
