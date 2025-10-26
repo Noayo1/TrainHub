@@ -1,6 +1,9 @@
-// FriendsList.jsx - Updated with Simple Search Bar + Advanced Button
-import { useState } from "react";
+// FriendsList.jsx - Updated with Profile Pictures
+// ✅ FIXED: Now loads and displays user profile pictures
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getDatabase, ref, onValue } from "firebase/database";
 
 export default function FriendsList({
   users,
@@ -14,6 +17,7 @@ export default function FriendsList({
   onRemoveFriend,
 }) {
   const navigate = useNavigate();
+  const [usersData, setUsersData] = useState({}); // ✅ NEW: Store all user data with profile pictures
 
   // Simple search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +27,23 @@ export default function FriendsList({
   const [emailFilter, setEmailFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // ✅ NEW: Load all users data (including profile pictures)
+  useEffect(() => {
+    const db = getDatabase();
+    const usersRef = ref(db, "users");
+
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setUsersData(snapshot.val());
+        console.log(
+          "📸 Users data loaded with profile pictures in FriendsList"
+        );
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const getInitial = (name) => {
     return name ? name.charAt(0).toUpperCase() : "U";
@@ -99,7 +120,6 @@ export default function FriendsList({
       <div className="friends-header">
         <h2>All Users</h2>
 
-        {/* ✅ NEW: Search Bar with Advanced Button on the Right */}
         <div className="search-bar-wrapper">
           <input
             type="text"
@@ -150,7 +170,7 @@ export default function FriendsList({
 
             {/* Parameter 3: Status */}
             <div className="search-field-inline">
-              <label> Status</label>
+              <label>Status</label>
               <select
                 className="search-select-inline"
                 value={statusFilter}
@@ -192,8 +212,7 @@ export default function FriendsList({
       <div className="users-grid">
         {filteredUsers.length === 0 ? (
           <div className="no-users-found">
-            <p> No users found matching your search criteria.</p>
-            <button onClick={handleResetFilters}>Reset Filters</button>
+            <p>❌ No users found matching your search criteria.</p>
           </div>
         ) : (
           filteredUsers.map((user) => {
@@ -201,12 +220,26 @@ export default function FriendsList({
 
             return (
               <div key={user.id} className="user-card">
+                {/* ✅ FIXED: Show profile picture or default avatar */}
                 <div
                   className="user-avatar-large"
                   onClick={() => handleUserClick(user.id)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", overflow: "hidden" }}
                 >
-                  {getInitial(user.displayName || user.email)}
+                  {usersData[user.id]?.profilePictureUrl ? (
+                    <img
+                      src={usersData[user.id].profilePictureUrl}
+                      alt={user.displayName}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  ) : (
+                    getInitial(user.displayName || user.email)
+                  )}
                 </div>
 
                 <h3
@@ -247,13 +280,13 @@ export default function FriendsList({
                       className="accept-btn"
                       onClick={() => onAcceptRequest(user.id)}
                     >
-                      Accept
+                      ✓ Accept
                     </button>
                     <button
                       className="reject-btn"
                       onClick={() => onRejectRequest(user.id)}
                     >
-                      Reject
+                      ✕ Reject
                     </button>
                   </div>
                 )}
@@ -263,7 +296,7 @@ export default function FriendsList({
                     className="add-friend-btn"
                     onClick={() => onSendRequest(user.id)}
                   >
-                    Add Friend
+                    + Add Friend
                   </button>
                 )}
               </div>

@@ -1,6 +1,6 @@
-// ProfileContainer.jsx - UPDATED with Profile Update Support
+// ProfileContainer.jsx - FIXED with Private Group Post Filtering
 // Responsibility: Fetch and manage profile data
-// Follows lecturer's pattern: Container manages data, Display shows it
+// âœ… ISSUE #2 FIX: Filters out private group posts for non-members
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -46,21 +46,98 @@ export default function ProfileContainer({ currentUser }) {
       setLoading(false);
     });
 
-    // Load user's posts
+    // âœ… ISSUE #2 FIX: Load user's posts AND filter by group privacy
     const postsRef = ref(db, "posts");
-    const unsubPosts = onValue(postsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const allPosts = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
-        const filtered = allPosts.filter((post) => post.authorId === userId);
-        filtered.sort((a, b) => b.timestamp - a.timestamp);
-        setUserPosts(filtered);
-      } else {
+    const groupsRef = ref(db, "groups");
+
+    const unsubPosts = onValue(postsRef, (postsSnapshot) => {
+      const postsData = postsSnapshot.val();
+
+      if (!postsData) {
         setUserPosts([]);
+        return;
       }
+
+      // Get all posts by this user
+      const allPosts = Object.keys(postsData).map((key) => ({
+        id: key,
+        ...postsData[key],
+      }));
+
+      let userPostsArray = allPosts.filter((post) => post.authorId === userId);
+
+      // âœ… NOW FILTER BY GROUP PRIVACY
+      onValue(
+        groupsRef,
+        (groupsSnapshot) => {
+          if (groupsSnapshot.exists()) {
+            const groupsData = groupsSnapshot.val();
+
+            // Filter out private group posts where currentUser is not a member
+            userPostsArray = userPostsArray.filter((post) => {
+              // If no groupId, it's a regular post - always show
+              if (!post.groupId) {
+                console.log(`âœ… Post ${post.id} - Regular post, showing`);
+                return true;
+              }
+
+              // Find the group
+              const group = groupsData[post.groupId];
+
+              // If group doesn't exist anymore, hide post
+              if (!group) {
+                console.log(`ðŸš« Post ${post.id} - Group not found, hiding`);
+                return false;
+              }
+
+              // If group is private, only show if currentUser is a member
+              if (group.isPrivate) {
+                const isMember =
+                  group.members && group.members[currentUser.uid];
+                if (!isMember) {
+                  console.log(
+                    `ðŸ”’ Post ${post.id} - Private group "${group.name}", user not member, hiding`
+                  );
+                } else {
+                  console.log(
+                    `âœ… Post ${post.id} - Private group "${group.name}", user is member, showing`
+                  );
+                }
+                return isMember;
+              }
+
+              // If public group, show post
+              console.log(
+                `âœ… Post ${post.id} - Public group "${group.name}", showing`
+              );
+              return true;
+            });
+
+            // Sort by timestamp (newest first)
+            userPostsArray.sort(
+              (a, b) =>
+                (b.timestamp || b.createdAt || 0) -
+                (a.timestamp || a.createdAt || 0)
+            );
+
+            console.log(
+              `ðŸ“Š Profile Posts: ${
+                allPosts.filter((p) => p.authorId === userId).length
+              } total, ${userPostsArray.length} visible after privacy filter`
+            );
+            setUserPosts(userPostsArray);
+          } else {
+            // No groups exist, just show all posts
+            userPostsArray.sort(
+              (a, b) =>
+                (b.timestamp || b.createdAt || 0) -
+                (a.timestamp || a.createdAt || 0)
+            );
+            setUserPosts(userPostsArray);
+          }
+        },
+        { onlyOnce: true }
+      );
     });
 
     // Load current user's friends
@@ -183,7 +260,7 @@ export default function ProfileContainer({ currentUser }) {
     }
   };
 
-  // ✅ NEW: Handle profile update
+  // Handle profile update
   const handleUpdateProfile = async (updates) => {
     // Profile is already updated in EditProfileModal
     // This just confirms the update

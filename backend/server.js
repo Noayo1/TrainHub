@@ -11,7 +11,7 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: "*", // מאפשר חיבורים מכל מקור (לצורכי בדיקה)
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });

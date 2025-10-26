@@ -21,7 +21,7 @@ export default function Post({
   const [commentAuthors, setCommentAuthors] = useState({}); // ✅ NEW: Comment authors profiles
   const navigate = useNavigate();
 
-  // ✅ Load author profile picture
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (post.authorId) {
       const db = getDatabase();

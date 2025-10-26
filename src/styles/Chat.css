@@ -1,140 +1,489 @@
-/* Chat.css - Real-time Chat Styling */
-@import './variables.css';
+/* FloatingChat.css - UPDATED with Friend Search Feature */
+/* Floating Chat System Styles */
 
-/* ========================================
-   CHAT CONTAINER
-   ======================================== */
+/* ==========================================
+   FLOATING CHAT BUTTON
+   ========================================== */
 
-.open-chat-btn {
-    padding: 12px 24px;
-    background: var(--gradient-primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-md);
-}
-
-.open-chat-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-}
-
-.chat-container {
+.floating-chat-button {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 380px;
-    height: 500px;
-    background: var(--gradient-card);
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.floating-chat-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(29, 161, 242, 0.4);
+}
+
+.chat-icon {
+    font-size: 28px;
+}
+
+.unread-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    border: 2px solid var(--bg-dark);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ==========================================
+   FLOATING CHAT WINDOW
+   ========================================== */
+
+.floating-chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 400px;
+    height: 600px;
+    background: var(--bg-card);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
-    z-index: 1000;
-    animation: slideInRight 0.3s ease;
+    z-index: 999;
+    animation: slideUp 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
-@keyframes slideInRight {
+@keyframes slideUp {
     from {
-        transform: translateX(400px);
+        transform: translateY(20px);
         opacity: 0;
     }
 
     to {
-        transform: translateX(0);
+        transform: translateY(0);
         opacity: 1;
     }
 }
 
-/* ========================================
-   CHAT HEADER
-   ======================================== */
-
-.chat-header {
+.chat-window-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-md);
+    padding: 16px 20px;
     background: var(--gradient-secondary);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: 1px solid var(--border-color);
 }
 
-.chat-header h3 {
+.chat-window-header h3 {
     margin: 0;
+    font-size: 18px;
     color: var(--text-primary);
-    font-size: 16px;
     font-weight: 600;
 }
 
-.close-chat-btn {
+.close-chat-window {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
     padding: 4px 8px;
     border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
 }
 
-.close-chat-btn:hover {
+.close-chat-window:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
 }
 
-/* ========================================
-   CHAT MESSAGES AREA
-   ======================================== */
-
-.chat-messages {
+.chat-window-body {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-md);
+    padding: 0;
+}
+
+/* ==========================================
+   ✅ NEW: SEARCH SECTION
+   ========================================== */
+
+.chat-search-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-hover);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.chat-search-input {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.chat-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.15);
+}
+
+.chat-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.clear-search-btn {
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.clear-search-btn:hover {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+}
+
+/* ✅ NEW: Search Results Info */
+.search-results-info {
+    padding: 8px 20px;
+    background: var(--bg-hover);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-results-info p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.search-results-info .no-results {
+    color: var(--text-muted);
+}
+
+.search-results-info .results-count {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ==========================================
+   CONVERSATIONS LIST
+   ========================================== */
+
+.conversations-list {
+    padding: 0;
+}
+
+.friends-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.friends-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.friends-grid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    /* ✅ Allow wrapping when searching */
+}
+
+.friends-grid::-webkit-scrollbar {
+    height: 4px;
+}
+
+.friends-grid::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+.friend-avatar {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    min-width: 60px;
 }
 
-.no-messages {
-    text-align: center;
-    color: var(--text-muted);
-    margin-top: 50%;
-    transform: translateY(-50%);
+.friend-avatar:hover {
+    transform: translateY(-2px);
 }
 
-.message {
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
     display: flex;
-    margin-bottom: var(--spacing-sm);
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.friend-name {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.recent-chats {
+    padding: 16px 0;
+}
+
+.recent-chats h4 {
+    padding: 0 20px;
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.no-conversations {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.no-conversations p {
+    margin: 8px 0;
+}
+
+.no-conversations .hint {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.conversation-item:hover {
+    background: var(--bg-hover);
+}
+
+.conv-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.conv-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.conv-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.conv-time {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.conv-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.conv-preview span:first-child {
+    color: var(--text-secondary);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.unread-text {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}
+
+.conv-unread-badge {
+    background: var(--primary-color);
+    color: white;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ==========================================
+   CHAT WINDOW (INSIDE FLOATING)
+   ========================================== */
+
+.chat-window-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.back-to-list-btn {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s ease;
+}
+
+.back-to-list-btn:hover {
+    background: var(--bg-hover);
+}
+
+.chat-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-messages-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages-area::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.chat-loading,
+.no-messages-yet {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px 20px;
+}
+
+.no-messages-yet p {
+    margin: 8px 0;
+}
+
+.no-messages-yet .hint {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.chat-message {
+    display: flex;
+    margin-bottom: 8px;
     animation: fadeIn 0.3s ease;
 }
 
-.message.sent {
+.chat-message.sent {
     justify-content: flex-end;
 }
 
-.message.received {
+.chat-message.received {
     justify-content: flex-start;
 }
 
-.message-content {
+.message-bubble {
     max-width: 70%;
     padding: 10px 14px;
-    border-radius: var(--radius-md);
+    border-radius: 16px;
     word-wrap: break-word;
 }
 
-.message.sent .message-content {
+.chat-message.sent .message-bubble {
     background: var(--gradient-primary);
     color: white;
     border-bottom-right-radius: 4px;
 }
 
-.message.received .message-content {
+.chat-message.received .message-bubble {
     background: var(--bg-hover);
     color: var(--text-primary);
     border-bottom-left-radius: 4px;
@@ -146,31 +495,26 @@
     line-height: 1.4;
 }
 
-.message-time {
+.message-timestamp {
     display: block;
     font-size: 11px;
     margin-top: 4px;
     opacity: 0.7;
 }
 
-.message.sent .message-time {
+.chat-message.sent .message-timestamp {
     text-align: right;
 }
 
-/* ========================================
-   CHAT INPUT FORM
-   ======================================== */
-
-.chat-input-form {
+.chat-input-area {
     display: flex;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
+    gap: 8px;
+    padding: 16px 20px;
     border-top: 1px solid var(--border-color);
     background: var(--bg-dark);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
-.chat-input {
+.chat-message-input {
     flex: 1;
     padding: 10px 14px;
     background: var(--bg-card);
@@ -178,20 +522,20 @@
     border-radius: var(--radius-md);
     color: var(--text-primary);
     font-size: 14px;
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
 }
 
-.chat-input:focus {
+.chat-message-input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.2);
 }
 
-.chat-input::placeholder {
+.chat-message-input::placeholder {
     color: var(--text-muted);
 }
 
-.send-message-btn {
+.chat-send-btn {
     padding: 10px 20px;
     background: var(--gradient-primary);
     color: white;
@@ -199,48 +543,48 @@
     border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
 }
 
-.send-message-btn:hover {
+.chat-send-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(29, 161, 242, 0.4);
 }
 
-.send-message-btn:active {
-    transform: translateY(0);
+.chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* ========================================
-   SCROLLBAR STYLING
-   ======================================== */
-
-.chat-messages::-webkit-scrollbar {
-    width: 6px;
-}
-
-.chat-messages::-webkit-scrollbar-track {
-    background: var(--bg-dark);
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: var(--radius-full);
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover {
-    background: var(--border-hover);
-}
-
-/* ========================================
-   RESPONSIVE DESIGN
-   ======================================== */
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
 
 @media (max-width: 500px) {
-    .chat-container {
-        width: calc(100vw - 40px);
-        height: 400px;
+    .floating-chat-window {
+        bottom: 80px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        height: 500px;
+    }
+
+    .floating-chat-button {
+        bottom: 20px;
         right: 20px;
-        left: 20px;
+        width: 56px;
+        height: 56px;
+    }
+
+    .chat-icon {
+        font-size: 24px;
+    }
+
+    .chat-search-section {
+        padding: 12px 16px;
+    }
+
+    .friends-grid {
+        flex-wrap: wrap;
     }
 }

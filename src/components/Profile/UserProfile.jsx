@@ -138,21 +138,23 @@ export default function UserProfile({
           )}
 
           <div className="profile-details">
-            <h1 className="profile-display-name">
-              {profileUser.displayName || profileUser.email?.split("@")[0]}
-            </h1>
+            <div className="profile-name-row">
+              <h1 className="profile-display-name">
+                {profileUser.displayName || profileUser.email?.split("@")[0]}
+              </h1>
+
+              {isOwnProfile && (
+                <span className="badge-own-profile">Your Profile</span>
+              )}
+              {friendStatus === "friends" && (
+                <span className="badge-friend">Friend ✓</span>
+              )}
+              {friendStatus === "pending" && (
+                <span className="badge-pending">Request Sent</span>
+              )}
+            </div>
 
             <p className="profile-email">{profileUser.email}</p>
-
-            {isOwnProfile && (
-              <span className="badge-own-profile">Your Profile</span>
-            )}
-            {friendStatus === "friends" && (
-              <span className="badge-friend">Friend ✓</span>
-            )}
-            {friendStatus === "pending" && (
-              <span className="badge-pending">Request Sent</span>
-            )}
           </div>
 
           {/* Action Buttons */}
@@ -172,7 +174,7 @@ export default function UserProfile({
                       className="message-friend-btn"
                       onClick={() => onToggleChat(profileUser.id)}
                     >
-                      💬 Send Message
+                      Send Message
                     </button>
                   </>
                 )}

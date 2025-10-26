@@ -13,12 +13,12 @@ export default function SignUp({ onSwitchToSignIn }) {
   const validate = () => {
     const newErrors = {};
 
-
     if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = "Please enter a valid email address.";
     }
     if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password)) {
-      newErrors.password = "Password must contain at least one letter and one number.";
+      newErrors.password =
+        "Password must contain at least one letter and one number.";
     }
     if (!/^\d{10}$/.test(phone)) {
       newErrors.phone = "Phone number must be exactly 10 digits.";
@@ -38,13 +38,13 @@ export default function SignUp({ onSwitchToSignIn }) {
     } catch (err) {
       console.log(err);
       if (err.code === "auth/email-already-in-use") {
-      setErrors((prev) => ({
-        ...prev,
-        email: "This email is already registered in the system.",
-      }));
-    } else {
-      alert("Something went wrong, please try again.");
-    }
+        setErrors((prev) => ({
+          ...prev,
+          email: "This email is already registered in the system.",
+        }));
+      } else {
+        alert("Something went wrong, please try again.");
+      }
     }
   };
 

@@ -12,7 +12,7 @@ export default function GroupDetail({
   currentUser,
   members,
   loading,
-  
+
   // Callbacks
   onCreateGroupPost,
   onLikePost,
@@ -22,7 +22,7 @@ export default function GroupDetail({
   onDeleteComment,
   onLeaveGroup,
   onDeleteGroup,
-  onBack
+  onBack,
 }) {
   const navigate = useNavigate();
   const [newPostContent, setNewPostContent] = useState("");
@@ -37,13 +37,14 @@ export default function GroupDetail({
       alert("Post content cannot be empty");
       return;
     }
-    
+
     await onCreateGroupPost(group.id, newPostContent);
     setNewPostContent("");
   };
 
   const isAdmin = currentUser && group && group.adminId === currentUser.uid;
-  const isMember = currentUser && group && group.members && group.members[currentUser.uid];
+  const isMember =
+    currentUser && group && group.members && group.members[currentUser.uid];
 
   if (loading) {
     return (
@@ -58,9 +59,7 @@ export default function GroupDetail({
       <div className="group-not-found">
         <h2>⚠️ Group Not Found</h2>
         <p>This group doesn't exist or has been removed.</p>
-        <button onClick={() => navigate("/")}>
-          Back to Home
-        </button>
+        <button onClick={() => navigate("/")}>Back to Home</button>
       </div>
     );
   }
@@ -71,7 +70,7 @@ export default function GroupDetail({
     <div className="group-detail-container">
       {/* Back Button */}
       <button className="back-button" onClick={onBack}>
-        ← Back to Groups
+        ← Back
       </button>
 
       {/* Group Header */}
@@ -88,7 +87,7 @@ export default function GroupDetail({
             <p className="group-description">
               {group.description || "No description"}
             </p>
-            
+
             <div className="group-badges">
               {group.isPrivate && (
                 <span className="badge-private">🔒 Private Group</span>
@@ -96,9 +95,7 @@ export default function GroupDetail({
               {!group.isPrivate && (
                 <span className="badge-public">🌐 Public Group</span>
               )}
-              {isAdmin && (
-                <span className="badge-admin">👑 Admin</span>
-              )}
+              {isAdmin && <span className="badge-admin">👑 Admin</span>}
               {isMember && !isAdmin && (
                 <span className="badge-member">✓ Member</span>
               )}
@@ -108,7 +105,7 @@ export default function GroupDetail({
           {/* Group Actions */}
           <div className="group-actions">
             {isAdmin && (
-              <button 
+              <button
                 className="btn-delete-group"
                 onClick={() => onDeleteGroup(group.id)}
               >
@@ -116,7 +113,7 @@ export default function GroupDetail({
               </button>
             )}
             {isMember && !isAdmin && (
-              <button 
+              <button
                 className="btn-leave-group"
                 onClick={() => onLeaveGroup(group.id)}
               >
@@ -150,8 +147,8 @@ export default function GroupDetail({
         <h3>Members ({memberCount})</h3>
         <div className="members-list">
           {members.map((member) => (
-            <div 
-              key={member.id} 
+            <div
+              key={member.id}
               className="member-item"
               onClick={() => navigate(`/profile/${member.id}`)}
               style={{ cursor: "pointer" }}
@@ -194,7 +191,7 @@ export default function GroupDetail({
       {/* Group Posts Section */}
       <div className="group-posts-section">
         <h2>Group Posts</h2>
-        
+
         {!isMember ? (
           <div className="not-member-message">
             <p>🔒 You must be a member to view and post in this group.</p>
@@ -204,8 +201,8 @@ export default function GroupDetail({
             <p>No posts in this group yet. Be the first to share!</p>
           </div>
         ) : (
-          <PostList 
-            posts={groupPosts} 
+          <PostList
+            posts={groupPosts}
             currentUser={currentUser}
             onLikePost={onLikePost}
             onUpdatePost={onUpdatePost}

@@ -307,7 +307,7 @@ export default function CreatePost({ currentUser, onCreatePost }) {
                   opacity: uploading ? 0.5 : 1,
                 }}
               >
-                🎨 Drawing
+                Drawing
               </button>
 
               {/* Multiple Images Button */}
@@ -327,7 +327,7 @@ export default function CreatePost({ currentUser, onCreatePost }) {
                   opacity: uploading || images.length >= 5 ? 0.5 : 1,
                 }}
               >
-                📸 Photos {images.length > 0 && `(${images.length}/5)`}
+                Photos {images.length > 0 && `(${images.length}/5)`}
                 <input
                   type="file"
                   accept="image/*"
@@ -354,7 +354,7 @@ export default function CreatePost({ currentUser, onCreatePost }) {
                   opacity: uploading || video ? 0.5 : 1,
                 }}
               >
-                🎥 Video
+                Video
                 <input
                   type="file"
                   accept="video/*"

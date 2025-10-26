@@ -1,11 +1,12 @@
 // src/components/Chat/FloatingChat.jsx
 // Main floating chat component with notifications and chat list
+// ✅ FIXED: Now loads and displays user profile pictures
 
-import { useState, useEffect } from 'react';
-import { getDatabase, ref, onValue } from 'firebase/database';
-import socketService from '../../services/socketService';
-import ChatWindow from './ChatWindow';
-import '../../styles/FloatingChat.css';
+import { useState, useEffect } from "react";
+import { getDatabase, ref, onValue } from "firebase/database";
+import socketService from "../../services/socketService";
+import ChatWindow from "./ChatWindow";
+import "../../styles/FloatingChat.css";
 
 export default function FloatingChat({ currentUser }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,23 @@ export default function FloatingChat({ currentUser }) {
   const [selectedChat, setSelectedChat] = useState(null);
   const [totalUnread, setTotalUnread] = useState(0);
   const [friends, setFriends] = useState([]);
+  const [usersData, setUsersData] = useState({}); // ✅ NEW: Store all user data with profile pictures
+  const [searchQuery, setSearchQuery] = useState(""); // ✅ NEW: Search state
+
+  // ✅ NEW: Load all users data (including profile pictures)
+  useEffect(() => {
+    const db = getDatabase();
+    const usersRef = ref(db, "users");
+
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setUsersData(snapshot.val());
+        console.log("📸 Users data loaded with profile pictures");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Load friends list
   useEffect(() => {
@@ -20,7 +38,7 @@ export default function FloatingChat({ currentUser }) {
 
     const db = getDatabase();
     const friendsRef = ref(db, `users/${currentUser.uid}/friends`);
-    
+
     const unsubFriends = onValue(friendsRef, async (snapshot) => {
       const friendsData = snapshot.val();
       if (!friendsData) {
@@ -34,14 +52,14 @@ export default function FloatingChat({ currentUser }) {
 
       for (const friendId of friendIds) {
         const userRef = ref(db, `users/${friendId}`);
-        const userSnapshot = await new Promise(resolve => {
+        const userSnapshot = await new Promise((resolve) => {
           onValue(userRef, resolve, { onlyOnce: true });
         });
-        
+
         if (userSnapshot.exists()) {
           friendsList.push({
             id: friendId,
-            ...userSnapshot.val()
+            ...userSnapshot.val(),
           });
         }
       }
@@ -57,7 +75,7 @@ export default function FloatingChat({ currentUser }) {
     if (!currentUser) return;
 
     const db = getDatabase();
-    const messagesRef = ref(db, 'messages');
+    const messagesRef = ref(db, "messages");
 
     const unsubMessages = onValue(messagesRef, (snapshot) => {
       const data = snapshot.val();
@@ -68,16 +86,21 @@ export default function FloatingChat({ currentUser }) {
 
       // Group messages by conversation
       const convMap = {};
-      
+
       Object.entries(data).forEach(([msgId, msg]) => {
         // Only include messages involving current user
-        if (msg.senderId !== currentUser.uid && msg.receiverId !== currentUser.uid) {
+        if (
+          msg.senderId !== currentUser.uid &&
+          msg.receiverId !== currentUser.uid
+        ) {
           return;
         }
 
         // Determine the other user
-        const otherUserId = msg.senderId === currentUser.uid ? msg.receiverId : msg.senderId;
-        const otherUserName = msg.senderId === currentUser.uid ? msg.receiverName : msg.senderName;
+        const otherUserId =
+          msg.senderId === currentUser.uid ? msg.receiverId : msg.senderId;
+        const otherUserName =
+          msg.senderId === currentUser.uid ? msg.receiverName : msg.senderName;
 
         if (!convMap[otherUserId]) {
           convMap[otherUserId] = {
@@ -86,7 +109,7 @@ export default function FloatingChat({ currentUser }) {
             messages: [],
             unreadCount: 0,
             lastMessage: null,
-            lastTimestamp: 0
+            lastTimestamp: 0,
           };
         }
 
@@ -105,8 +128,8 @@ export default function FloatingChat({ currentUser }) {
       });
 
       // Convert to array and sort by latest message
-      const convArray = Object.values(convMap).sort((a, b) => 
-        b.lastTimestamp - a.lastTimestamp
+      const convArray = Object.values(convMap).sort(
+        (a, b) => b.lastTimestamp - a.lastTimestamp
       );
 
       setConversations(convArray);
@@ -119,6 +142,39 @@ export default function FloatingChat({ currentUser }) {
     return () => unsubMessages();
   }, [currentUser]);
 
+  // ✅ NEW: Filter function for search
+  const filterBySearch = (item) => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    const name = (
+      item.displayName ||
+      item.userName ||
+      item.email ||
+      ""
+    ).toLowerCase();
+    const email = (item.email || "").toLowerCase();
+
+    return name.includes(query) || email.includes(query);
+  };
+
+  // ✅ NEW: Get filtered friends (only friends, not all users)
+  const filteredFriends = friends
+    .filter(filterBySearch)
+    .filter(
+      (friend) => !conversations.some((conv) => conv.userId === friend.id)
+    );
+
+  // ✅ NEW: Get filtered conversations (only among friends)
+  const filteredConversations = conversations.filter((conv) => {
+    // Check if this conversation is with a friend
+    const isFriend = friends.some((friend) => friend.id === conv.userId);
+    if (!isFriend) return false;
+
+    // Apply search filter
+    return filterBySearch(conv);
+  });
+
   // Listen for new messages via socket
   useEffect(() => {
     if (!currentUser) return;
@@ -126,14 +182,14 @@ export default function FloatingChat({ currentUser }) {
     const handleNewMessage = (data) => {
       // If message is for current user, increment unread
       if (data.receiverId === currentUser.uid) {
-        setTotalUnread(prev => prev + 1);
+        setTotalUnread((prev) => prev + 1);
       }
     };
 
     socketService.onReceiveMessage(handleNewMessage);
 
     return () => {
-      socketService.removeListener('receive-message');
+      socketService.removeListener("receive-message");
     };
   }, [currentUser]);
 
@@ -141,13 +197,14 @@ export default function FloatingChat({ currentUser }) {
     setIsOpen(!isOpen);
     if (!isOpen) {
       setSelectedChat(null); // Close any open chat when closing window
+      setSearchQuery(""); // ✅ Clear search when closing
     }
   };
 
   const handleSelectConversation = (conv) => {
     setSelectedChat({
       recipientId: conv.userId,
-      recipientName: conv.userName
+      recipientName: conv.userName,
     });
 
     // Mark messages as read
@@ -157,49 +214,54 @@ export default function FloatingChat({ currentUser }) {
   const handleStartNewChat = (friend) => {
     setSelectedChat({
       recipientId: friend.id,
-      recipientName: friend.displayName || friend.email?.split('@')[0]
+      recipientName: friend.displayName || friend.email?.split("@")[0],
     });
   };
 
   const handleBackToList = () => {
     setSelectedChat(null);
+    setSearchQuery(""); // ✅ Clear search when going back
   };
 
   const markAsRead = async (otherUserId) => {
     // Update read status in Firebase
     const db = getDatabase();
-    const messagesRef = ref(db, 'messages');
-    
-    onValue(messagesRef, async (snapshot) => {
-      const data = snapshot.val();
-      if (!data) return;
+    const messagesRef = ref(db, "messages");
 
-      const updates = {};
-      Object.entries(data).forEach(([msgId, msg]) => {
-        if (msg.senderId === otherUserId && 
-            msg.receiverId === currentUser.uid && 
-            !msg.read) {
-          updates[`messages/${msgId}/read`] = true;
+    onValue(
+      messagesRef,
+      async (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const updates = {};
+        Object.entries(data).forEach(([msgId, msg]) => {
+          if (
+            msg.senderId === otherUserId &&
+            msg.receiverId === currentUser.uid &&
+            !msg.read
+          ) {
+            updates[`messages/${msgId}/read`] = true;
+          }
+        });
+
+        if (Object.keys(updates).length > 0) {
+          const { update } = await import("firebase/database");
+          await update(ref(db), updates);
         }
-      });
-
-      if (Object.keys(updates).length > 0) {
-        const { update } = await import('firebase/database');
-        await update(ref(db), updates);
-      }
-    }, { onlyOnce: true });
+      },
+      { onlyOnce: true }
+    );
 
     // Update local state
-    setConversations(prev => 
-      prev.map(conv => 
-        conv.userId === otherUserId 
-          ? { ...conv, unreadCount: 0 }
-          : conv
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.userId === otherUserId ? { ...conv, unreadCount: 0 } : conv
       )
     );
 
-    setTotalUnread(prev => {
-      const conv = conversations.find(c => c.userId === otherUserId);
+    setTotalUnread((prev) => {
+      const conv = conversations.find((c) => c.userId === otherUserId);
       return prev - (conv?.unreadCount || 0);
     });
   };
@@ -212,7 +274,9 @@ export default function FloatingChat({ currentUser }) {
       <div className="floating-chat-button" onClick={handleToggleChat}>
         <span className="chat-icon">💬</span>
         {totalUnread > 0 && (
-          <span className="unread-badge">{totalUnread > 99 ? '99+' : totalUnread}</span>
+          <span className="unread-badge">
+            {totalUnread > 99 ? "99+" : totalUnread}
+          </span>
         )}
       </div>
 
@@ -220,7 +284,7 @@ export default function FloatingChat({ currentUser }) {
       {isOpen && (
         <div className="floating-chat-window">
           <div className="chat-window-header">
-            <h3>{selectedChat ? selectedChat.recipientName : 'Messages'}</h3>
+            <h3>{selectedChat ? selectedChat.recipientName : "Messages"}</h3>
             <button className="close-chat-window" onClick={handleToggleChat}>
               ✕
             </button>
@@ -230,28 +294,86 @@ export default function FloatingChat({ currentUser }) {
             {!selectedChat ? (
               // Conversation List
               <div className="conversations-list">
+                {/* ✅ NEW: Search Bar */}
+                <div className="chat-search-section">
+                  <input
+                    type="text"
+                    className="chat-search-input"
+                    placeholder="🔍 Search friends..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      className="clear-search-btn"
+                      onClick={() => setSearchQuery("")}
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* ✅ NEW: Show filtered results message */}
+                {searchQuery && (
+                  <div className="search-results-info">
+                    {filteredFriends.length + filteredConversations.length ===
+                    0 ? (
+                      <p className="no-results">
+                        No friends found matching "{searchQuery}"
+                      </p>
+                    ) : (
+                      <p className="results-count">
+                        Found{" "}
+                        {filteredFriends.length + filteredConversations.length}{" "}
+                        friend(s)
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Friends who haven't messaged yet */}
-                {friends.length > 0 && (
+                {filteredFriends.length > 0 && (
                   <div className="friends-section">
-                    <h4>Start a conversation</h4>
+                    <h4>
+                      {searchQuery
+                        ? `Friends matching "${searchQuery}"`
+                        : "Start a conversation"}
+                    </h4>
                     <div className="friends-grid">
-                      {friends
-                        .filter(friend => 
-                          !conversations.some(conv => conv.userId === friend.id)
-                        )
-                        .slice(0, 5)
-                        .map(friend => (
-                          <div 
+                      {filteredFriends
+                        .slice(0, searchQuery ? 20 : 5)
+                        .map((friend) => (
+                          <div
                             key={friend.id}
                             className="friend-avatar"
                             onClick={() => handleStartNewChat(friend)}
                             title={friend.displayName || friend.email}
                           >
-                            <div className="avatar-circle">
-                              {(friend.displayName || friend.email)?.[0]?.toUpperCase()}
-                            </div>
+                            {/* ✅ FIXED: Show profile picture or default avatar */}
+                            {usersData[friend.id]?.profilePictureUrl ? (
+                              <img
+                                src={usersData[friend.id].profilePictureUrl}
+                                alt={friend.displayName}
+                                className="avatar-circle"
+                                style={{
+                                  width: "50px",
+                                  height: "50px",
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ) : (
+                              <div className="avatar-circle">
+                                {(friend.displayName ||
+                                  friend.email)?.[0]?.toUpperCase()}
+                              </div>
+                            )}
                             <span className="friend-name">
-                              {(friend.displayName || friend.email?.split('@')[0]).slice(0, 8)}
+                              {(
+                                friend.displayName ||
+                                friend.email?.split("@")[0]
+                              ).slice(0, 8)}
                             </span>
                           </div>
                         ))}
@@ -261,22 +383,54 @@ export default function FloatingChat({ currentUser }) {
 
                 {/* Recent Conversations */}
                 <div className="recent-chats">
-                  <h4>Recent Chats</h4>
-                  {conversations.length === 0 ? (
+                  <h4>
+                    {searchQuery
+                      ? `Conversations matching "${searchQuery}"`
+                      : "Recent Chats"}
+                  </h4>
+                  {filteredConversations.length === 0 ? (
                     <div className="no-conversations">
-                      <p>No messages yet</p>
-                      <p className="hint">Start chatting with your friends!</p>
+                      {searchQuery ? (
+                        <>
+                          <p>No conversations found</p>
+                          <p className="hint">Try a different search term</p>
+                        </>
+                      ) : (
+                        <>
+                          <p>No messages yet</p>
+                          <p className="hint">
+                            Start chatting with your friends!
+                          </p>
+                        </>
+                      )}
                     </div>
                   ) : (
-                    conversations.map(conv => (
-                      <div 
+                    filteredConversations.map((conv) => (
+                      <div
                         key={conv.userId}
                         className="conversation-item"
                         onClick={() => handleSelectConversation(conv)}
                       >
-                        <div className="conv-avatar">
-                          {conv.userName?.[0]?.toUpperCase() || 'U'}
-                        </div>
+                        {/* ✅ FIXED: Show profile picture or default avatar */}
+                        {usersData[conv.userId]?.profilePictureUrl ? (
+                          <img
+                            src={usersData[conv.userId].profilePictureUrl}
+                            alt={conv.userName}
+                            className="conv-avatar"
+                            style={{
+                              width: "48px",
+                              height: "48px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <div className="conv-avatar">
+                            {conv.userName?.[0]?.toUpperCase() || "U"}
+                          </div>
+                        )}
+
                         <div className="conv-info">
                           <div className="conv-header">
                             <span className="conv-name">{conv.userName}</span>
@@ -285,9 +439,13 @@ export default function FloatingChat({ currentUser }) {
                             </span>
                           </div>
                           <div className="conv-preview">
-                            <span className={conv.unreadCount > 0 ? 'unread-text' : ''}>
+                            <span
+                              className={
+                                conv.unreadCount > 0 ? "unread-text" : ""
+                              }
+                            >
                               {conv.lastMessage?.slice(0, 40)}
-                              {conv.lastMessage?.length > 40 ? '...' : ''}
+                              {conv.lastMessage?.length > 40 ? "..." : ""}
                             </span>
                             {conv.unreadCount > 0 && (
                               <span className="conv-unread-badge">
@@ -315,12 +473,7 @@ export default function FloatingChat({ currentUser }) {
       )}
 
       {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="chat-overlay" 
-          onClick={handleToggleChat}
-        />
-      )}
+      {isOpen && <div className="chat-overlay" onClick={handleToggleChat} />}
     </>
   );
 }
@@ -328,7 +481,7 @@ export default function FloatingChat({ currentUser }) {
 function formatTime(timestamp) {
   const now = Date.now();
   const diff = now - timestamp;
-  
+
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -336,5 +489,5 @@ function formatTime(timestamp) {
   if (days > 0) return `${days}d`;
   if (hours > 0) return `${hours}h`;
   if (minutes > 0) return `${minutes}m`;
-  return 'now';
+  return "now";
 }

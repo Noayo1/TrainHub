@@ -1,10 +1,20 @@
 // EditProfileModal.jsx - Profile Editing Modal
 import { useState, useRef } from "react";
 import { getDatabase, ref, update } from "firebase/database";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 import "../../styles/EditProfileModal.css";
 
-export default function EditProfileModal({ currentUser, profileData, onClose, onSave }) {
+export default function EditProfileModal({
+  currentUser,
+  profileData,
+  onClose,
+  onSave,
+}) {
   const [formData, setFormData] = useState({
     dateOfBirth: profileData?.dateOfBirth || "",
     lifeStatus: profileData?.lifeStatus || "single",
@@ -46,7 +56,7 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
       }
 
       setProfilePicture(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -67,8 +77,13 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
       // Upload profile picture if selected
       if (profilePicture) {
         const storage = getStorage();
-        const imageRef = storageRef(storage, `profilePictures/${currentUser.uid}/${Date.now()}_${profilePicture.name}`);
-        
+        const imageRef = storageRef(
+          storage,
+          `profilePictures/${currentUser.uid}/${Date.now()}_${
+            profilePicture.name
+          }`
+        );
+
         await uploadBytes(imageRef, profilePicture);
         const downloadURL = await getDownloadURL(imageRef);
         updates.profilePictureUrl = downloadURL;
@@ -92,7 +107,7 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
     <div className="modal-overlay" onClick={onClose}>
       <div className="edit-profile-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>✏️ Edit Profile</h2>
+          <h2> Edit Profile</h2>
           <button className="close-btn" onClick={onClose}>
             ✕
           </button>
@@ -108,7 +123,9 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
                   <img src={profilePicturePreview} alt="Profile" />
                 ) : (
                   <div className="default-avatar">
-                    {currentUser.displayName?.[0]?.toUpperCase() || currentUser.email?.[0]?.toUpperCase() || "U"}
+                    {currentUser.displayName?.[0]?.toUpperCase() ||
+                      currentUser.email?.[0]?.toUpperCase() ||
+                      "U"}
                   </div>
                 )}
               </div>
@@ -125,7 +142,7 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
                   className="upload-btn"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  📷 Upload Photo
+                  Upload Photo
                 </button>
                 {profilePicturePreview && (
                   <button
@@ -136,7 +153,7 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
                       setProfilePicturePreview(null);
                     }}
                   >
-                    🗑️ Remove
+                    Remove
                   </button>
                 )}
               </div>
@@ -146,7 +163,7 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
           {/* Personal Information */}
           <div className="form-section">
             <h3>Personal Information</h3>
-            
+
             <div className="form-field">
               <label>Date of Birth</label>
               <input
@@ -244,12 +261,8 @@ export default function EditProfileModal({ currentUser, profileData, onClose, on
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="save-btn"
-              disabled={uploading}
-            >
-              {uploading ? "Saving..." : "💾 Save Changes"}
+            <button type="submit" className="save-btn" disabled={uploading}>
+              {uploading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

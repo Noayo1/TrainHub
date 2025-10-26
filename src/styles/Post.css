@@ -1,4 +1,5 @@
-/* Post.css - Complete Post Styling with Group Badge */
+/* Post.css - Complete Post Styling with Group Badge + Profile Pictures */
+/* ✅ UPDATED: Added support for profile pictures in author avatars */
 @import './variables.css';
 
 /* ========================================
@@ -38,6 +39,7 @@
     align-items: flex-start;
 }
 
+/* ✅ UPDATED: Author avatar now supports both profile pictures and text initials */
 .author-avatar {
     width: 48px;
     height: 48px;
@@ -52,11 +54,27 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
     transition: all var(--transition-normal);
+    overflow: hidden;
+    /* ✅ NEW: Ensures images fit perfectly */
+    border: 2px solid var(--border-color);
+    /* ✅ NEW: Border for images */
+    cursor: pointer;
+    /* ✅ NEW: Indicates clickable */
+}
+
+/* ✅ NEW: Image styling inside author avatar */
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-full);
 }
 
 .author-avatar:hover {
     transform: scale(1.1);
     box-shadow: var(--shadow-glow);
+    border-color: var(--primary-color);
+    /* ✅ NEW: Highlight on hover */
 }
 
 .author-details {
@@ -70,6 +88,14 @@
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+    cursor: pointer;
+    /* ✅ NEW: Indicates clickable */
+    transition: color var(--transition-fast);
+}
+
+.author-name:hover {
+    color: var(--primary-color);
+    /* ✅ NEW: Highlight on hover */
 }
 
 .post-time {
@@ -78,7 +104,7 @@
 }
 
 /* ========================================
-   ✅ NEW: GROUP BADGE IN POSTS
+   GROUP BADGE IN POSTS
    ======================================== */
 
 .post-group-badge {
@@ -267,10 +293,12 @@
 
 .post-image {
     width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    transition: transform var(--transition-normal);
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: transform 0.2s ease;
 }
 
 .post-image:hover {
@@ -328,8 +356,15 @@
 }
 
 @keyframes heartBeat {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
 }
 
 .comment-count {
@@ -363,6 +398,7 @@
     background: var(--bg-dark);
 }
 
+/* ✅ UPDATED: Comment avatar now supports both profile pictures and text initials */
 .comment-avatar {
     width: 36px;
     height: 36px;
@@ -376,6 +412,18 @@
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
+    overflow: hidden;
+    /* ✅ NEW: Ensures images fit perfectly */
+    border: 2px solid var(--border-color);
+    /* ✅ NEW: Border for images */
+}
+
+/* ✅ NEW: Image styling inside comment avatar */
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-full);
 }
 
 .comment-content {
@@ -499,6 +547,12 @@
         font-size: 18px;
     }
 
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
     .post-actions-menu {
         flex-direction: column;
     }
@@ -539,6 +593,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
