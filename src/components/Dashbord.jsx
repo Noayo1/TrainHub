@@ -1,11 +1,11 @@
-// Dashboard.jsx - FIXED VERSION
+// Dashboard.jsx - FIXED (removed unused imports)
 // Responsibility: Authentication and routing
 
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { getDatabase, ref, set, get } from "firebase/database";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth } from "./firebase";
+import { userAPI } from "../services/api";
 import socketService from "../services/socketService";
 import Feed from "./Feed/Feed";
 import ProfileContainer from "./Profile/ProfileContainer";
@@ -22,25 +22,20 @@ export default function Dashboard() {
   const { userId, groupId } = useParams();
   const navigate = useNavigate();
 
-  // Determine view mode based on URL
   const viewMode = groupId ? "group" : userId ? "profile" : "feed";
 
-  // Initialize user on auth change
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         await initializeUserData(currentUser);
         setUser(currentUser);
 
-        // Connect to chat server when user logs in
         socketService.connect(
           currentUser.uid,
           currentUser.displayName || currentUser.email.split("@")[0]
         );
       } else {
         setUser(null);
-
-        // Disconnect from chat server when user logs out
         socketService.disconnect();
       }
       setLoading(false);
@@ -48,46 +43,47 @@ export default function Dashboard() {
 
     return () => {
       unsub();
-      // Cleanup socket connection on component unmount
       socketService.disconnect();
     };
   }, []);
 
   const initializeUserData = async (currentUser) => {
-    const db = getDatabase();
-    const userRef = ref(db, `users/${currentUser.uid}`);
-
     try {
-      const snapshot = await get(userRef);
-      if (!snapshot.exists()) {
-        await set(userRef, {
+      const response = await userAPI.getUser(currentUser.uid);
+
+      if (!response.user) {
+        await userAPI.createUser({
           uid: currentUser.uid,
           email: currentUser.email,
           displayName:
             currentUser.displayName || currentUser.email.split("@")[0],
-          createdAt: Date.now(),
-          friends: {},
-          sentRequests: {},
-          receivedRequests: {},
         });
       }
     } catch (error) {
-      console.error("Error initializing user data:", error);
+      if (error.message.includes("User not found")) {
+        try {
+          await userAPI.createUser({
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName:
+              currentUser.displayName || currentUser.email.split("@")[0],
+          });
+        } catch (createError) {
+          console.error("Error creating user:", createError);
+        }
+      } else {
+        console.error("Error initializing user data:", error);
+      }
     }
   };
 
-  // ✅ FIX: Add this callback function
   const handleUserLoggedIn = async (loggedInUser) => {
-    console.log("✅ User logged in successfully:", loggedInUser.email);
-    // The onAuthStateChanged listener will handle the rest
-    // No need to manually set user here
+    // onAuthStateChanged listener will handle the rest
   };
 
   const handleSignOut = async () => {
     try {
-      // Disconnect from chat before signing out
       socketService.disconnect();
-
       await signOut(auth);
       alert("Signed out successfully");
       navigate("/");
@@ -117,7 +113,6 @@ export default function Dashboard() {
     <div>
       {user ? (
         <div>
-          {/* Top Navigation Bar */}
           <div
             style={{
               display: "flex",
@@ -162,7 +157,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Main Content - Conditional Rendering */}
           {viewMode === "feed" && <Feed />}
           {viewMode === "profile" && <ProfileContainer currentUser={user} />}
           {viewMode === "group" && <GroupContainer currentUser={user} />}
@@ -174,7 +168,7 @@ export default function Dashboard() {
             <SignUp onSwitchToSignIn={() => setShowSignUp(false)} />
           ) : (
             <SignIn
-              onUserLoggedIn={handleUserLoggedIn} // ✅ FIX: Pass the callback
+              onUserLoggedIn={handleUserLoggedIn}
               onSwitchToSignUp={() => setShowSignUp(true)}
             />
           )}

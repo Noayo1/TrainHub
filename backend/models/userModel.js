@@ -40,11 +40,9 @@ class User {
     if (!data.email || !data.email.includes("@")) {
       errors.push("Valid email is required");
     }
-
     if (!data.uid) {
       errors.push("User ID is required");
     }
-
     return errors;
   }
 }

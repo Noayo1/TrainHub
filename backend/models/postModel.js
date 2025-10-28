@@ -17,7 +17,6 @@ class Post {
     this.createdAt = data.createdAt || Date.now();
     this.updatedAt = Date.now();
   }
-
   // Convert to plain object for database
   toJSON() {
     return {
@@ -42,15 +41,12 @@ class Post {
     if (!data.authorId) {
       errors.push("Author ID is required");
     }
-
     if (!data.content || data.content.trim().length === 0) {
       errors.push("Post content is required");
     }
-
     if (data.content && data.content.length > 5000) {
       errors.push("Post content is too long (max 5000 characters)");
     }
-
     return errors;
   }
 }

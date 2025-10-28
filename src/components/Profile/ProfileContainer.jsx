@@ -1,6 +1,5 @@
-// ProfileContainer.jsx - FIXED with Private Group Post Filtering
+// ProfileContainer.jsx - FIXED WITH BACKEND INTEGRATION
 // Responsibility: Fetch and manage profile data
-// âœ… ISSUE #2 FIX: Filters out private group posts for non-members
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -12,6 +11,7 @@ import {
   remove,
   push,
 } from "firebase/database";
+import { userAPI } from "../../services/api";
 import UserProfile from "./UserProfile";
 import ChatContainer from "../Chat/ChatContainer";
 
@@ -19,7 +19,6 @@ export default function ProfileContainer({ currentUser }) {
   const { userId } = useParams();
   const navigate = useNavigate();
 
-  // Local state for this container
   const [profileUser, setProfileUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [friends, setFriends] = useState({});
@@ -31,14 +30,12 @@ export default function ProfileContainer({ currentUser }) {
     setChatOpen(recipientId !== null);
   };
 
-  // Load profile data
   useEffect(() => {
     if (!userId || !currentUser) return;
 
     setLoading(true);
     const db = getDatabase();
 
-    // Load user info
     const userRef = ref(db, `users/${userId}`);
     const unsubUser = onValue(userRef, (snapshot) => {
       const data = snapshot.val();
@@ -46,107 +43,27 @@ export default function ProfileContainer({ currentUser }) {
       setLoading(false);
     });
 
-    // âœ… ISSUE #2 FIX: Load user's posts AND filter by group privacy
     const postsRef = ref(db, "posts");
-    const groupsRef = ref(db, "groups");
-
-    const unsubPosts = onValue(postsRef, (postsSnapshot) => {
-      const postsData = postsSnapshot.val();
-
-      if (!postsData) {
+    const unsubPosts = onValue(postsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const allPosts = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
+        const filtered = allPosts.filter((post) => post.authorId === userId);
+        filtered.sort((a, b) => b.timestamp - a.timestamp);
+        setUserPosts(filtered);
+      } else {
         setUserPosts([]);
-        return;
       }
-
-      // Get all posts by this user
-      const allPosts = Object.keys(postsData).map((key) => ({
-        id: key,
-        ...postsData[key],
-      }));
-
-      let userPostsArray = allPosts.filter((post) => post.authorId === userId);
-
-      // âœ… NOW FILTER BY GROUP PRIVACY
-      onValue(
-        groupsRef,
-        (groupsSnapshot) => {
-          if (groupsSnapshot.exists()) {
-            const groupsData = groupsSnapshot.val();
-
-            // Filter out private group posts where currentUser is not a member
-            userPostsArray = userPostsArray.filter((post) => {
-              // If no groupId, it's a regular post - always show
-              if (!post.groupId) {
-                console.log(`âœ… Post ${post.id} - Regular post, showing`);
-                return true;
-              }
-
-              // Find the group
-              const group = groupsData[post.groupId];
-
-              // If group doesn't exist anymore, hide post
-              if (!group) {
-                console.log(`ðŸš« Post ${post.id} - Group not found, hiding`);
-                return false;
-              }
-
-              // If group is private, only show if currentUser is a member
-              if (group.isPrivate) {
-                const isMember =
-                  group.members && group.members[currentUser.uid];
-                if (!isMember) {
-                  console.log(
-                    `ðŸ”’ Post ${post.id} - Private group "${group.name}", user not member, hiding`
-                  );
-                } else {
-                  console.log(
-                    `âœ… Post ${post.id} - Private group "${group.name}", user is member, showing`
-                  );
-                }
-                return isMember;
-              }
-
-              // If public group, show post
-              console.log(
-                `âœ… Post ${post.id} - Public group "${group.name}", showing`
-              );
-              return true;
-            });
-
-            // Sort by timestamp (newest first)
-            userPostsArray.sort(
-              (a, b) =>
-                (b.timestamp || b.createdAt || 0) -
-                (a.timestamp || a.createdAt || 0)
-            );
-
-            console.log(
-              `ðŸ“Š Profile Posts: ${
-                allPosts.filter((p) => p.authorId === userId).length
-              } total, ${userPostsArray.length} visible after privacy filter`
-            );
-            setUserPosts(userPostsArray);
-          } else {
-            // No groups exist, just show all posts
-            userPostsArray.sort(
-              (a, b) =>
-                (b.timestamp || b.createdAt || 0) -
-                (a.timestamp || a.createdAt || 0)
-            );
-            setUserPosts(userPostsArray);
-          }
-        },
-        { onlyOnce: true }
-      );
     });
 
-    // Load current user's friends
     const friendsRef = ref(db, `users/${currentUser.uid}/friends`);
     const unsubFriends = onValue(friendsRef, (snapshot) => {
       setFriends(snapshot.val() || {});
     });
 
-    // Load current user's sent requests
     const sentRef = ref(db, `users/${currentUser.uid}/sentRequests`);
     const unsubSent = onValue(sentRef, (snapshot) => {
       setSentRequests(snapshot.val() || {});
@@ -160,7 +77,6 @@ export default function ProfileContainer({ currentUser }) {
     };
   }, [userId, currentUser]);
 
-  // Callbacks for child component
   const handleLikePost = async (postId, currentLikes, likedBy) => {
     const db = getDatabase();
     const postRef = ref(db, `posts/${postId}`);
@@ -230,21 +146,17 @@ export default function ProfileContainer({ currentUser }) {
     }
   };
 
-  const handleSendFriendRequest = async (recipientId) => {
+  const handleSendFriendRequest = async (friendId) => {
     const db = getDatabase();
     try {
       await update(ref(db, `users/${currentUser.uid}/sentRequests`), {
-        [recipientId]: true,
+        [friendId]: true,
       });
-      await update(ref(db, `users/${recipientId}/receivedRequests`), {
-        [currentUser.uid]: {
-          userName: currentUser.displayName || currentUser.email.split("@")[0],
-          timestamp: Date.now(),
-        },
+      await update(ref(db, `users/${friendId}/receivedRequests`), {
+        [currentUser.uid]: true,
       });
-      alert("Friend request sent!");
     } catch (error) {
-      console.error("Error sending request:", error);
+      console.error("Error sending friend request:", error);
     }
   };
 
@@ -252,26 +164,41 @@ export default function ProfileContainer({ currentUser }) {
     if (!window.confirm("Remove this friend?")) return;
     const db = getDatabase();
     try {
-      await remove(ref(db, `users/${currentUser.uid}/friends/${friendId}`));
-      await remove(ref(db, `users/${friendId}/friends/${currentUser.uid}`));
-      alert("Friend removed");
+      await update(
+        ref(db, `users/${currentUser.uid}/friends/${friendId}`),
+        null
+      );
+      await update(
+        ref(db, `users/${friendId}/friends/${currentUser.uid}`),
+        null
+      );
     } catch (error) {
       console.error("Error removing friend:", error);
     }
   };
 
-  // Handle profile update
   const handleUpdateProfile = async (updates) => {
-    // Profile is already updated in EditProfileModal
-    // This just confirms the update
-    console.log("Profile updated:", updates);
+    try {
+      await userAPI.updateUser(currentUser.uid, updates);
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile");
+    }
   };
 
   const handleBack = () => {
     navigate("/");
   };
 
-  // Pass everything to display component via props
+  if (loading) {
+    return <div>Loading profile...</div>;
+  }
+
+  if (!profileUser) {
+    return <div>User not found</div>;
+  }
+
   return (
     <>
       <UserProfile
@@ -292,17 +219,11 @@ export default function ProfileContainer({ currentUser }) {
         onUpdateProfile={handleUpdateProfile}
         onBack={handleBack}
       />
-
-      {/* Chat component */}
-      {chatOpen && profileUser && profileUser.id !== currentUser.uid && (
+      {chatOpen && (
         <ChatContainer
           currentUser={currentUser}
-          recipientId={profileUser.id}
-          recipientName={
-            profileUser.displayName || profileUser.email?.split("@")[0]
-          }
-          isOpen={chatOpen}
-          onToggleChat={handleToggleChat}
+          recipientId={userId}
+          onClose={() => setChatOpen(false)}
         />
       )}
     </>
