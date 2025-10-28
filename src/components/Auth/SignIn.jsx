@@ -12,8 +12,6 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-
-    // Clear any previous errors
     setError("");
     setLoading(true);
 
@@ -23,8 +21,6 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
         email,
         password
       );
-
-      // ✅ Success - clear form and proceed
       setError("");
       setEmail("");
       setPassword("");
@@ -35,14 +31,8 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
       // Handle specific Firebase auth errors
       if (err.code === "auth/user-not-found") {
         setError("No user found with this email address.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password. Please try again.");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address format.");
       } else if (err.code === "auth/invalid-credential") {
         setError("Invalid email or password. Please try again.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Too many failed attempts. Please try again later.");
       } else {
         setError("Login failed. Please check your credentials and try again.");
       }
@@ -76,7 +66,7 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              setError(""); // Clear error when user starts typing
+              setError("");
             }}
             fullWidth
             disableUnderline
@@ -95,6 +85,8 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
             {loading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
+
+        <hr />
 
         <p>
           Don't have an account?{" "}

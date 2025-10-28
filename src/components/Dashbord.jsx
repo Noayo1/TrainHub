@@ -18,10 +18,8 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [showSignUp, setShowSignUp] = useState(false);
   const [loading, setLoading] = useState(true);
-
   const { userId, groupId } = useParams();
   const navigate = useNavigate();
-
   const viewMode = groupId ? "group" : userId ? "profile" : "feed";
 
   useEffect(() => {
