@@ -11,7 +11,6 @@ export default function UserProfile({
   friends,
   sentRequests,
   loading,
-
   onLikePost,
   onUpdatePost,
   onDeletePost,
@@ -19,7 +18,6 @@ export default function UserProfile({
   onDeleteComment,
   onSendFriendRequest,
   onRemoveFriend,
-  onToggleChat,
   onUpdateProfile,
   onBack,
 }) {
@@ -95,7 +93,7 @@ export default function UserProfile({
   if (!profileUser) {
     return (
       <div className="profile-not-found">
-        <h2>⚠️ User Not Found</h2>
+        <h2>User Not Found</h2>
         <p>This user doesn't exist or has been removed.</p>
         <button onClick={() => navigate("/")}>Back to Home</button>
       </div>
@@ -110,8 +108,10 @@ export default function UserProfile({
       <button className="back-button" onClick={onBack}>
         ← Back
       </button>
+
       <div className="profile-header-card">
         <div className="profile-cover-photo" />
+
         <div className="profile-main-info">
           {profileUser.profilePictureUrl ? (
             <img
@@ -135,7 +135,7 @@ export default function UserProfile({
                 <span className="badge-own-profile">Your Profile</span>
               )}
               {friendStatus === "friends" && (
-                <span className="badge-friend">Friend ✓</span>
+                <span className="badge-friend">Friend</span>
               )}
               {friendStatus === "pending" && (
                 <span className="badge-pending">Request Sent</span>
@@ -144,32 +144,24 @@ export default function UserProfile({
 
             <p className="profile-email">{profileUser.email}</p>
           </div>
+
           <div className="profile-actions">
             {!isOwnProfile && (
               <>
                 {friendStatus === "friends" && (
-                  <>
-                    <button
-                      className="remove-friend-btn"
-                      onClick={handleFriendAction}
-                    >
-                      Remove Friend
-                    </button>
-
-                    <button
-                      className="message-friend-btn"
-                      onClick={() => onToggleChat(profileUser.id)}
-                    >
-                      Send Message
-                    </button>
-                  </>
+                  <button
+                    className="remove-friend-btn"
+                    onClick={handleFriendAction}
+                  >
+                    Remove Friend
+                  </button>
                 )}
                 {friendStatus === "none" && (
                   <button
                     className="btn-add-friend"
                     onClick={handleFriendAction}
                   >
-                    + Add Friend
+                    Add Friend
                   </button>
                 )}
                 {friendStatus === "pending" && (
@@ -186,6 +178,7 @@ export default function UserProfile({
             )}
           </div>
         </div>
+
         <div className="profile-stats">
           <div className="stat-item">
             <span className="stat-number">{userPosts.length}</span>
@@ -206,6 +199,7 @@ export default function UserProfile({
             <span className="stat-label">Joined</span>
           </div>
         </div>
+
         {(profileUser.favoriteSport ||
           profileUser.activityLevel ||
           profileUser.lifeStatus ||
@@ -225,7 +219,7 @@ export default function UserProfile({
               )}
               {profileUser.dateOfBirth && (
                 <div className="info-item">
-                  <span className="info-label">🎂 Birthday:</span>
+                  <span className="info-label">Birthday:</span>
                   <span className="info-value">
                     {new Date(profileUser.dateOfBirth).toLocaleDateString()}
                   </span>
@@ -262,7 +256,7 @@ export default function UserProfile({
             </div>
             {profileUser.fitnessGoal && (
               <div className="fitness-goal-section">
-                <span className="info-label"> Fitness Goal:</span>
+                <span className="info-label">Fitness Goal:</span>
                 <p className="fitness-goal-text">{profileUser.fitnessGoal}</p>
               </div>
             )}
@@ -270,7 +264,6 @@ export default function UserProfile({
         )}
       </div>
 
-      {/* Posts Section */}
       <div className="profile-content">
         <div className="profile-posts-section">
           <h2 style={{ marginBottom: "20px" }}>
@@ -301,7 +294,6 @@ export default function UserProfile({
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
       {showEditModal && isOwnProfile && (
         <EditProfileModal
           currentUser={currentUser}

@@ -10,7 +10,6 @@ import {
 } from "firebase/database";
 import { userAPI } from "../../services/api";
 import UserProfile from "./UserProfile";
-import ChatContainer from "../Chat/ChatContainer";
 
 export default function ProfileContainer({ currentUser }) {
   const { userId } = useParams();
@@ -21,11 +20,6 @@ export default function ProfileContainer({ currentUser }) {
   const [friends, setFriends] = useState({});
   const [sentRequests, setSentRequests] = useState({});
   const [loading, setLoading] = useState(true);
-  const [chatOpen, setChatOpen] = useState(false);
-
-  const handleToggleChat = (recipientId) => {
-    setChatOpen(recipientId !== null);
-  };
 
   useEffect(() => {
     if (!userId || !currentUser) return;
@@ -197,32 +191,22 @@ export default function ProfileContainer({ currentUser }) {
   }
 
   return (
-    <>
-      <UserProfile
-        profileUser={profileUser}
-        userPosts={userPosts}
-        currentUser={currentUser}
-        friends={friends}
-        sentRequests={sentRequests}
-        loading={loading}
-        onLikePost={handleLikePost}
-        onUpdatePost={handleUpdatePost}
-        onDeletePost={handleDeletePost}
-        onAddComment={handleAddComment}
-        onDeleteComment={handleDeleteComment}
-        onSendFriendRequest={handleSendFriendRequest}
-        onRemoveFriend={handleRemoveFriend}
-        onToggleChat={handleToggleChat}
-        onUpdateProfile={handleUpdateProfile}
-        onBack={handleBack}
-      />
-      {chatOpen && (
-        <ChatContainer
-          currentUser={currentUser}
-          recipientId={userId}
-          onClose={() => setChatOpen(false)}
-        />
-      )}
-    </>
+    <UserProfile
+      profileUser={profileUser}
+      userPosts={userPosts}
+      currentUser={currentUser}
+      friends={friends}
+      sentRequests={sentRequests}
+      loading={loading}
+      onLikePost={handleLikePost}
+      onUpdatePost={handleUpdatePost}
+      onDeletePost={handleDeletePost}
+      onAddComment={handleAddComment}
+      onDeleteComment={handleDeleteComment}
+      onSendFriendRequest={handleSendFriendRequest}
+      onRemoveFriend={handleRemoveFriend}
+      onUpdateProfile={handleUpdateProfile}
+      onBack={handleBack}
+    />
   );
 }
