@@ -1,6 +1,3 @@
-// src/components/Chat/ChatContainer.jsx
-// Container: Manages chat data and socket communication
-
 import { useState, useEffect } from "react";
 import socketService from "../../services/socketService";
 import Chat from "./Chat";
@@ -15,16 +12,13 @@ export default function ChatContainer({
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load chat history when recipient changes
   useEffect(() => {
     if (!recipientId || !currentUser) return;
 
     setLoading(true);
     setMessages([]);
 
-    // Get history from server
     socketService.getChatHistory(currentUser.uid, recipientId, (history) => {
-      // Transform messages to our format
       const transformed = history.map((msg) => ({
         id: msg.id || msg.timestamp,
         senderId: msg.senderId,
@@ -36,9 +30,7 @@ export default function ChatContainer({
       setLoading(false);
     });
 
-    // Listen for new messages
     const handleReceiveMessage = (data) => {
-      // Only add if from/to this conversation
       const isThisConvo =
         (data.senderId === recipientId &&
           data.receiverId === currentUser.uid) ||
@@ -46,7 +38,6 @@ export default function ChatContainer({
 
       if (isThisConvo) {
         setMessages((prev) => {
-          // Prevent duplicates
           const exists = prev.some((m) => m.id === data.id);
           if (exists) return prev;
 
@@ -65,7 +56,6 @@ export default function ChatContainer({
     };
 
     const handleMessageSent = (data) => {
-      // Add sent message if not already in list
       if (
         data.senderId === currentUser.uid &&
         data.receiverId === recipientId
@@ -97,7 +87,6 @@ export default function ChatContainer({
     };
   }, [recipientId, currentUser]);
 
-  // Send message callback
   const handleSendMessage = async (recipientId, messageText) => {
     if (!messageText.trim() || !currentUser) return;
 

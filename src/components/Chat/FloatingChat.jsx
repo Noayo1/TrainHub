@@ -1,7 +1,3 @@
-// src/components/Chat/FloatingChat.jsx
-// Main floating chat component with notifications and chat list
-// ✅ FIXED: Now loads and displays user profile pictures
-
 import { useState, useEffect } from "react";
 import { getDatabase, ref, onValue } from "firebase/database";
 import socketService from "../../services/socketService";
@@ -14,10 +10,9 @@ export default function FloatingChat({ currentUser }) {
   const [selectedChat, setSelectedChat] = useState(null);
   const [totalUnread, setTotalUnread] = useState(0);
   const [friends, setFriends] = useState([]);
-  const [usersData, setUsersData] = useState({}); // ✅ NEW: Store all user data with profile pictures
-  const [searchQuery, setSearchQuery] = useState(""); // ✅ NEW: Search state
+  const [usersData, setUsersData] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // ✅ NEW: Load all users data (including profile pictures)
   useEffect(() => {
     const db = getDatabase();
     const usersRef = ref(db, "users");
@@ -32,7 +27,6 @@ export default function FloatingChat({ currentUser }) {
     return () => unsubscribe();
   }, []);
 
-  // Load friends list
   useEffect(() => {
     if (!currentUser) return;
 
@@ -46,7 +40,6 @@ export default function FloatingChat({ currentUser }) {
         return;
       }
 
-      // Load friend details
       const friendIds = Object.keys(friendsData);
       const friendsList = [];
 
@@ -70,7 +63,6 @@ export default function FloatingChat({ currentUser }) {
     return () => unsubFriends();
   }, [currentUser]);
 
-  // Load conversations from Firebase
   useEffect(() => {
     if (!currentUser) return;
 
@@ -84,11 +76,9 @@ export default function FloatingChat({ currentUser }) {
         return;
       }
 
-      // Group messages by conversation
       const convMap = {};
 
       Object.entries(data).forEach(([msgId, msg]) => {
-        // Only include messages involving current user
         if (
           msg.senderId !== currentUser.uid &&
           msg.receiverId !== currentUser.uid
@@ -96,7 +86,6 @@ export default function FloatingChat({ currentUser }) {
           return;
         }
 
-        // Determine the other user
         const otherUserId =
           msg.senderId === currentUser.uid ? msg.receiverId : msg.senderId;
         const otherUserName =
@@ -115,26 +104,22 @@ export default function FloatingChat({ currentUser }) {
 
         convMap[otherUserId].messages.push(msg);
 
-        // Count unread (messages sent TO current user that are unread)
         if (msg.receiverId === currentUser.uid && !msg.read) {
           convMap[otherUserId].unreadCount++;
         }
 
-        // Track last message
         if (msg.timestamp > convMap[otherUserId].lastTimestamp) {
           convMap[otherUserId].lastMessage = msg.message;
           convMap[otherUserId].lastTimestamp = msg.timestamp;
         }
       });
 
-      // Convert to array and sort by latest message
       const convArray = Object.values(convMap).sort(
         (a, b) => b.lastTimestamp - a.lastTimestamp
       );
 
       setConversations(convArray);
 
-      // Calculate total unread
       const total = convArray.reduce((sum, conv) => sum + conv.unreadCount, 0);
       setTotalUnread(total);
     });
@@ -142,7 +127,6 @@ export default function FloatingChat({ currentUser }) {
     return () => unsubMessages();
   }, [currentUser]);
 
-  // ✅ NEW: Filter function for search
   const filterBySearch = (item) => {
     if (!searchQuery.trim()) return true;
 
@@ -158,29 +142,23 @@ export default function FloatingChat({ currentUser }) {
     return name.includes(query) || email.includes(query);
   };
 
-  // ✅ NEW: Get filtered friends (only friends, not all users)
   const filteredFriends = friends
     .filter(filterBySearch)
     .filter(
       (friend) => !conversations.some((conv) => conv.userId === friend.id)
     );
 
-  // ✅ NEW: Get filtered conversations (only among friends)
   const filteredConversations = conversations.filter((conv) => {
-    // Check if this conversation is with a friend
     const isFriend = friends.some((friend) => friend.id === conv.userId);
     if (!isFriend) return false;
 
-    // Apply search filter
     return filterBySearch(conv);
   });
 
-  // Listen for new messages via socket
   useEffect(() => {
     if (!currentUser) return;
 
     const handleNewMessage = (data) => {
-      // If message is for current user, increment unread
       if (data.receiverId === currentUser.uid) {
         setTotalUnread((prev) => prev + 1);
       }
@@ -196,8 +174,8 @@ export default function FloatingChat({ currentUser }) {
   const handleToggleChat = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
-      setSelectedChat(null); // Close any open chat when closing window
-      setSearchQuery(""); // ✅ Clear search when closing
+      setSelectedChat(null);
+      setSearchQuery("");
     }
   };
 
@@ -207,7 +185,6 @@ export default function FloatingChat({ currentUser }) {
       recipientName: conv.userName,
     });
 
-    // Mark messages as read
     markAsRead(conv.userId);
   };
 
@@ -220,11 +197,10 @@ export default function FloatingChat({ currentUser }) {
 
   const handleBackToList = () => {
     setSelectedChat(null);
-    setSearchQuery(""); // ✅ Clear search when going back
+    setSearchQuery("");
   };
 
   const markAsRead = async (otherUserId) => {
-    // Update read status in Firebase
     const db = getDatabase();
     const messagesRef = ref(db, "messages");
 
@@ -253,7 +229,6 @@ export default function FloatingChat({ currentUser }) {
       { onlyOnce: true }
     );
 
-    // Update local state
     setConversations((prev) =>
       prev.map((conv) =>
         conv.userId === otherUserId ? { ...conv, unreadCount: 0 } : conv
@@ -270,7 +245,6 @@ export default function FloatingChat({ currentUser }) {
 
   return (
     <>
-      {/* Floating Chat Button */}
       <div className="floating-chat-button" onClick={handleToggleChat}>
         <span className="chat-icon">💬</span>
         {totalUnread > 0 && (
@@ -280,7 +254,6 @@ export default function FloatingChat({ currentUser }) {
         )}
       </div>
 
-      {/* Chat Window */}
       {isOpen && (
         <div className="floating-chat-window">
           <div className="chat-window-header">
@@ -292,9 +265,7 @@ export default function FloatingChat({ currentUser }) {
 
           <div className="chat-window-body">
             {!selectedChat ? (
-              // Conversation List
               <div className="conversations-list">
-                {/* ✅ NEW: Search Bar */}
                 <div className="chat-search-section">
                   <input
                     type="text"
@@ -313,8 +284,6 @@ export default function FloatingChat({ currentUser }) {
                     </button>
                   )}
                 </div>
-
-                {/* ✅ NEW: Show filtered results message */}
                 {searchQuery && (
                   <div className="search-results-info">
                     {filteredFriends.length + filteredConversations.length ===
@@ -331,8 +300,6 @@ export default function FloatingChat({ currentUser }) {
                     )}
                   </div>
                 )}
-
-                {/* Friends who haven't messaged yet */}
                 {filteredFriends.length > 0 && (
                   <div className="friends-section">
                     <h4>
@@ -350,7 +317,6 @@ export default function FloatingChat({ currentUser }) {
                             onClick={() => handleStartNewChat(friend)}
                             title={friend.displayName || friend.email}
                           >
-                            {/* ✅ FIXED: Show profile picture or default avatar */}
                             {usersData[friend.id]?.profilePictureUrl ? (
                               <img
                                 src={usersData[friend.id].profilePictureUrl}
@@ -381,7 +347,6 @@ export default function FloatingChat({ currentUser }) {
                   </div>
                 )}
 
-                {/* Recent Conversations */}
                 <div className="recent-chats">
                   <h4>
                     {searchQuery
@@ -411,7 +376,6 @@ export default function FloatingChat({ currentUser }) {
                         className="conversation-item"
                         onClick={() => handleSelectConversation(conv)}
                       >
-                        {/* ✅ FIXED: Show profile picture or default avatar */}
                         {usersData[conv.userId]?.profilePictureUrl ? (
                           <img
                             src={usersData[conv.userId].profilePictureUrl}
@@ -460,7 +424,6 @@ export default function FloatingChat({ currentUser }) {
                 </div>
               </div>
             ) : (
-              // Chat Window
               <ChatWindow
                 currentUser={currentUser}
                 recipientId={selectedChat.recipientId}
@@ -471,8 +434,6 @@ export default function FloatingChat({ currentUser }) {
           </div>
         </div>
       )}
-
-      {/* Overlay */}
       {isOpen && <div className="chat-overlay" onClick={handleToggleChat} />}
     </>
   );

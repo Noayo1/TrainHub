@@ -16,8 +16,6 @@ export default function Chat({
 }) {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
-
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -28,7 +26,6 @@ export default function Chat({
     }
   }, [messages, loading]);
 
-  // Handle send
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
@@ -37,7 +34,6 @@ export default function Chat({
     setNewMessage("");
   };
 
-  // Format time
   const getTimeDifference = (timestamp) => {
     const now = Date.now();
     const diff = now - timestamp;
@@ -52,7 +48,6 @@ export default function Chat({
     return "Just now";
   };
 
-  // If closed, show button
   if (!isOpen) {
     return (
       <button
@@ -64,10 +59,8 @@ export default function Chat({
     );
   }
 
-  // Render chat window
   return (
     <div className="chat-container">
-      {/* Header */}
       <div className="chat-header">
         <h3>💬 {recipientName}</h3>
         <button className="close-chat-btn" onClick={() => onToggleChat(null)}>
@@ -75,13 +68,12 @@ export default function Chat({
         </button>
       </div>
 
-      {/* Messages */}
       <div className="chat-messages">
         {loading && <p className="chat-loading">Loading messages...</p>}
 
         {!loading && messages.length === 0 && (
           <p className="no-messages">
-            No messages yet. Start the conversation! 👋
+            No messages yet. Start the conversation!
           </p>
         )}
 
@@ -108,7 +100,6 @@ export default function Chat({
         )}
       </div>
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className="chat-input-form">
         <input
           type="text"

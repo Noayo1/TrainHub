@@ -1,37 +1,36 @@
-// GroupContainer.jsx - CONTAINER COMPONENT
-// Responsibility: Fetch and manage group data (like MainScreen)
-// Follows lecturer's pattern: Container manages data, Display shows it
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getDatabase, ref, onValue, update, remove, push, get } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  update,
+  remove,
+  push,
+  get,
+} from "firebase/database";
 import GroupDetail from "./GroupDetail";
 
 export default function GroupContainer({ currentUser }) {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  
-  // Local state for this container
   const [groupData, setGroupData] = useState(null);
   const [groupPosts, setGroupPosts] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load group data
   useEffect(() => {
     if (!groupId || !currentUser) return;
 
     setLoading(true);
     const db = getDatabase();
 
-    // Load group info
     const groupRef = ref(db, `groups/${groupId}`);
     const unsubGroup = onValue(groupRef, async (snapshot) => {
       const data = snapshot.val();
       if (data) {
         setGroupData({ id: groupId, ...data });
-        
-        // Load members
+
         if (data.members) {
           await loadMembers(Object.keys(data.members));
         }
@@ -41,7 +40,6 @@ export default function GroupContainer({ currentUser }) {
       setLoading(false);
     });
 
-    // Load group posts
     const postsRef = ref(db, "posts");
     const unsubPosts = onValue(postsRef, (snapshot) => {
       const data = snapshot.val();
@@ -50,7 +48,7 @@ export default function GroupContainer({ currentUser }) {
           id: key,
           ...data[key],
         }));
-        const filtered = allPosts.filter(post => post.groupId === groupId);
+        const filtered = allPosts.filter((post) => post.groupId === groupId);
         filtered.sort((a, b) => b.timestamp - a.timestamp);
         setGroupPosts(filtered);
       } else {
@@ -81,7 +79,6 @@ export default function GroupContainer({ currentUser }) {
     setMembers(membersData);
   };
 
-  // Callbacks for child component
   const handleCreateGroupPost = async (groupId, content) => {
     if (!content.trim()) return;
     const db = getDatabase();
@@ -95,7 +92,7 @@ export default function GroupContainer({ currentUser }) {
         likes: 0,
         likedBy: {},
         comments: {},
-        groupId: groupId
+        groupId: groupId,
       });
     } catch (error) {
       console.error("Error creating post:", error);
@@ -187,8 +184,6 @@ export default function GroupContainer({ currentUser }) {
     const db = getDatabase();
     try {
       await remove(ref(db, `groups/${groupId}`));
-      
-      // Delete all group posts
       const snapshot = await get(ref(db, "posts"));
       if (snapshot.exists()) {
         const posts = snapshot.val();
@@ -198,7 +193,7 @@ export default function GroupContainer({ currentUser }) {
           }
         }
       }
-      
+
       alert("Group deleted");
       navigate("/");
     } catch (error) {
@@ -210,7 +205,6 @@ export default function GroupContainer({ currentUser }) {
     navigate("/");
   };
 
-  // Pass everything to display component via props
   return (
     <GroupDetail
       group={groupData}

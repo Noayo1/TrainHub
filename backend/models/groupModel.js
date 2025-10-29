@@ -1,6 +1,3 @@
-// backend/controllers/groupController.js
-// Group Controller - Handles all group-related operations
-
 const { db } = require("../config/firebase");
 const Group = require("../models/groupModel");
 

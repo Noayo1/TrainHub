@@ -1,6 +1,3 @@
-// backend/controllers/postController.js
-// Post Controller - Handles all post-related operations
-
 const { db } = require("../config/firebase");
 const Post = require("../models/postModel");
 

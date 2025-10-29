@@ -1,9 +1,5 @@
-// backend/middleware/validationMiddleware.js
-// Validation Middleware - Validate request data
-
 const { body, param, query, validationResult } = require("express-validator");
 
-// Handle validation errors
 exports.handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -11,8 +7,6 @@ exports.handleValidationErrors = (req, res, next) => {
   }
   next();
 };
-
-// User validation rules
 exports.validateUserCreation = [
   body("uid").notEmpty().withMessage("User ID is required"),
   body("email").isEmail().withMessage("Valid email is required"),
@@ -36,8 +30,6 @@ exports.validateUserUpdate = [
     .isIn(["user", "admin"])
     .withMessage("Role must be either user or admin"),
 ];
-
-// Post validation rules
 exports.validatePostCreation = [
   body("authorId").notEmpty().withMessage("Author ID is required"),
   body("authorName").notEmpty().withMessage("Author name is required"),
@@ -61,8 +53,6 @@ exports.validatePostUpdate = [
     .isLength({ max: 5000 })
     .withMessage("Content is too long (max 5000 characters)"),
 ];
-
-// Group validation rules
 exports.validateGroupCreation = [
   body("name")
     .notEmpty()
@@ -97,7 +87,6 @@ exports.validateGroupUpdate = [
     .withMessage("isPrivate must be a boolean"),
 ];
 
-// ID parameter validation
 exports.validateUserId = [
   param("userId").notEmpty().withMessage("User ID is required"),
 ];
@@ -110,7 +99,6 @@ exports.validateGroupId = [
   param("groupId").notEmpty().withMessage("Group ID is required"),
 ];
 
-// Search validation
 exports.validateDateRange = [
   query("startDate")
     .optional()

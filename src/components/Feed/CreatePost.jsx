@@ -1,4 +1,3 @@
-// CreatePost.jsx - Firebase Storage + Multiple Images + Video in SAME POST
 import { useState } from "react";
 import CanvasDrawing from "../Media/CanvasDrawing";
 import firebaseStorageService from "../../services/firebaseStorageService";
@@ -32,27 +31,25 @@ export default function CreatePost({ onCreatePost }) {
       let imageUrls = [];
       let videoUrl = null;
 
-      // Upload images to Firebase Storage
       if (images.length > 0) {
         console.log(`Uploading ${images.length} images...`);
         const imageFiles = images.map((img) => img.file);
         imageUrls = await firebaseStorageService.uploadImages(
           imageFiles,
           (progress) => {
-            setUploadProgress(progress * 0.6); // Images = 60% of progress
+            setUploadProgress(progress * 0.6);
           }
         );
         console.log(`${imageUrls.length} images uploaded`);
       }
 
-      // Upload video to Firebase Storage
       if (video) {
         console.log("Uploading video...");
         videoUrl = await firebaseStorageService.uploadVideo(
           video,
           (progress) => {
             const baseProgress = images.length > 0 ? 60 : 0;
-            setUploadProgress(baseProgress + progress * 0.4); // Video = 40% of progress
+            setUploadProgress(baseProgress + progress * 0.4);
           }
         );
         console.log("Video uploaded");
@@ -60,7 +57,6 @@ export default function CreatePost({ onCreatePost }) {
 
       setUploadProgress(100);
 
-      // Create post with both images AND video
       await onCreatePost(
         newPostContent || "",
         drawingImage,
@@ -68,7 +64,6 @@ export default function CreatePost({ onCreatePost }) {
         videoUrl
       );
 
-      // Clear form
       setNewPostContent("");
       setDrawingImage(null);
       setImages([]);
@@ -94,12 +89,10 @@ export default function CreatePost({ onCreatePost }) {
     setDrawingImage(null);
   };
 
-  // Handle multiple image selection
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // Limit to 5 images
     if (images.length + files.length > 5) {
       alert("Maximum 5 images per post");
       return;
@@ -109,19 +102,16 @@ export default function CreatePost({ onCreatePost }) {
     const validImages = [];
 
     for (const file of files) {
-      // Validate it's an image
       if (!file.type.startsWith("image/")) {
         alert(`${file.name} is not an image file`);
         continue;
       }
 
-      // Check size
       if (file.size > maxImageSize) {
         alert(`${file.name} exceeds 10MB limit`);
         continue;
       }
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         validImages.push({
@@ -151,13 +141,11 @@ export default function CreatePost({ onCreatePost }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate it's a video
     if (!file.type.startsWith("video/")) {
       alert("Please select a video file");
       return;
     }
 
-    // Check size (50MB limit)
     const maxVideoSize = 50 * 1024 * 1024;
     if (file.size > maxVideoSize) {
       alert("Video must be less than 50MB");
@@ -192,8 +180,6 @@ export default function CreatePost({ onCreatePost }) {
             rows="4"
             disabled={uploading}
           />
-
-          {/* Drawing Preview */}
           {drawingImage && (
             <div className="drawing-preview">
               <img
@@ -215,8 +201,6 @@ export default function CreatePost({ onCreatePost }) {
               </button>
             </div>
           )}
-
-          {/* Multiple Images Preview */}
           {images.length > 0 && (
             <div className="images-preview-grid">
               {images.map((img) => (
@@ -239,7 +223,6 @@ export default function CreatePost({ onCreatePost }) {
             </div>
           )}
 
-          {/* Video Preview */}
           {videoPreview && (
             <div className="media-preview">
               <video src={videoPreview} controls className="preview-video" />
@@ -253,8 +236,6 @@ export default function CreatePost({ onCreatePost }) {
               </button>
             </div>
           )}
-
-          {/* Upload Progress */}
           {uploading && (
             <div className="upload-progress">
               <div className="progress-bar">
@@ -270,8 +251,6 @@ export default function CreatePost({ onCreatePost }) {
               </span>
             </div>
           )}
-
-          {/* Action Buttons */}
           <div
             style={{
               display: "flex",
@@ -301,8 +280,6 @@ export default function CreatePost({ onCreatePost }) {
               >
                 Drawing
               </button>
-
-              {/* Multiple Images Button */}
               <label
                 className="media-button"
                 title="Add photos (max 5 images, 10MB each)"

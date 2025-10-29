@@ -1,4 +1,3 @@
-// Post.jsx - UPDATED with Profile Picture Support
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDatabase, ref, get } from "firebase/database";
@@ -177,7 +176,6 @@ export default function Post({
 
   return (
     <div className="post-card">
-      {/* Post Header */}
       <div className="post-header">
         <div className="post-author-info">
           <div className="author-avatar" onClick={handleAuthorClick}>
@@ -211,7 +209,6 @@ export default function Post({
               {getTimeDifference(post.timestamp)}
             </span>
 
-            {/* Group info badge */}
             {groupInfo && (
               <div
                 className="post-group-badge"
@@ -236,7 +233,6 @@ export default function Post({
         )}
       </div>
 
-      {/* Post Content */}
       <div className="post-content">
         {isEditing ? (
           <div className="edit-post-form">
@@ -258,8 +254,6 @@ export default function Post({
         ) : (
           <>
             {post.content && <p className="post-text">{post.content}</p>}
-
-            {/* Drawing */}
             {hasDrawing && (
               <div className="post-media-container">
                 <img
@@ -270,7 +264,6 @@ export default function Post({
               </div>
             )}
 
-            {/* Images */}
             {hasImages && (
               <div
                 className={`post-media-container ${
@@ -290,7 +283,6 @@ export default function Post({
               </div>
             )}
 
-            {/* Video */}
             {hasVideo && (
               <div className="post-media-container">
                 <video className="post-video" controls>
@@ -303,7 +295,6 @@ export default function Post({
         )}
       </div>
 
-      {/* Post Actions */}
       <div className="post-actions">
         <button
           className={`like-btn ${hasLiked ? "liked" : ""}`}
@@ -317,7 +308,6 @@ export default function Post({
         </span>
       </div>
 
-      {/* Comments Section */}
       <div className="comments-section">
         {commentsArray.map((comment) => {
           const commentAuthor = commentAuthors[comment.authorId];

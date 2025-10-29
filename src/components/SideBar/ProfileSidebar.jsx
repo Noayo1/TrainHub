@@ -1,13 +1,11 @@
-// ProfileSidebar.jsx - UPDATED with Profile Picture Support
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDatabase, ref, onValue } from "firebase/database";
 
 export default function ProfileSidebar({ currentUser }) {
   const navigate = useNavigate();
-  const [userProfile, setUserProfile] = useState(null); // ✅ NEW: User profile data
+  const [userProfile, setUserProfile] = useState(null);
 
-  // ✅ NEW: Load user profile data (including profile picture)
   useEffect(() => {
     if (currentUser?.uid) {
       const db = getDatabase();
@@ -17,7 +15,7 @@ export default function ProfileSidebar({ currentUser }) {
         if (snapshot.exists()) {
           setUserProfile(snapshot.val());
           console.log(
-            "📸 Profile picture loaded:",
+            "Profile picture loaded:",
             snapshot.val().profilePictureUrl
           );
         }
@@ -41,7 +39,6 @@ export default function ProfileSidebar({ currentUser }) {
   return (
     <aside className="feed-sidebar-right">
       <div className="profile-card">
-        {/* ✅ UPDATED: Show profile picture or default avatar */}
         <div
           className="profile-avatar-large"
           onClick={handleProfileClick}

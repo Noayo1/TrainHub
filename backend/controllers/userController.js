@@ -1,6 +1,3 @@
-// backend/controllers/userController.js
-// User Controller - Handles all user-related operations
-
 const { db } = require("../config/firebase");
 const User = require("../models/userModel");
 

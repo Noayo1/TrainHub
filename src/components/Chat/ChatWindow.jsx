@@ -1,73 +1,79 @@
-// src/components/Chat/ChatWindow.jsx
-// Individual chat window component
+import { useState, useEffect, useRef } from "react";
+import socketService from "../../services/socketService";
 
-import { useState, useEffect, useRef } from 'react';
-import socketService from '../../services/socketService';
-
-export default function ChatWindow({ currentUser, recipientId, recipientName, onBack }) {
+export default function ChatWindow({
+  currentUser,
+  recipientId,
+  recipientName,
+  onBack,
+}) {
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
 
-  // Load chat history
   useEffect(() => {
     if (!recipientId || !currentUser) return;
 
     setLoading(true);
     setMessages([]);
 
-    socketService.getChatHistory(
-      currentUser.uid,
-      recipientId,
-      (history) => {
-        const transformed = history.map(msg => ({
-          id: msg.id || msg.timestamp,
-          senderId: msg.senderId,
-          senderName: msg.senderName,
-          text: msg.message,
-          timestamp: msg.timestamp,
-        }));
-        setMessages(transformed);
-        setLoading(false);
-      }
-    );
+    socketService.getChatHistory(currentUser.uid, recipientId, (history) => {
+      const transformed = history.map((msg) => ({
+        id: msg.id || msg.timestamp,
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        text: msg.message,
+        timestamp: msg.timestamp,
+      }));
+      setMessages(transformed);
+      setLoading(false);
+    });
 
-    // Listen for new messages
     const handleReceiveMessage = (data) => {
-      const isThisConvo = 
-        (data.senderId === recipientId && data.receiverId === currentUser.uid) ||
+      const isThisConvo =
+        (data.senderId === recipientId &&
+          data.receiverId === currentUser.uid) ||
         (data.senderId === currentUser.uid && data.receiverId === recipientId);
 
       if (isThisConvo) {
-        setMessages(prev => {
-          const exists = prev.some(m => m.id === data.id);
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === data.id);
           if (exists) return prev;
-          
-          return [...prev, {
-            id: data.id || Date.now(),
-            senderId: data.senderId,
-            senderName: data.senderName,
-            text: data.message,
-            timestamp: data.timestamp
-          }];
+
+          return [
+            ...prev,
+            {
+              id: data.id || Date.now(),
+              senderId: data.senderId,
+              senderName: data.senderName,
+              text: data.message,
+              timestamp: data.timestamp,
+            },
+          ];
         });
       }
     };
 
     const handleMessageSent = (data) => {
-      if (data.senderId === currentUser.uid && data.receiverId === recipientId) {
-        setMessages(prev => {
-          const exists = prev.some(m => m.id === data.id);
+      if (
+        data.senderId === currentUser.uid &&
+        data.receiverId === recipientId
+      ) {
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === data.id);
           if (exists) return prev;
-          
-          return [...prev, {
-            id: data.id || Date.now(),
-            senderId: data.senderId,
-            senderName: data.senderName,
-            text: data.message,
-            timestamp: data.timestamp
-          }];
+
+          return [
+            ...prev,
+            {
+              id: data.id || Date.now(),
+              senderId: data.senderId,
+              senderName: data.senderName,
+              text: data.message,
+              timestamp: data.timestamp,
+            },
+          ];
         });
       }
     };
@@ -76,16 +82,15 @@ export default function ChatWindow({ currentUser, recipientId, recipientName, on
     socketService.onMessageSent(handleMessageSent);
 
     return () => {
-      socketService.removeListener('receive-message');
-      socketService.removeListener('message-sent');
+      socketService.removeListener("receive-message");
+      socketService.removeListener("message-sent");
     };
   }, [recipientId, currentUser]);
 
-  // Auto-scroll
   useEffect(() => {
     if (messages.length > 0 && !loading) {
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     }
   }, [messages, loading]);
@@ -96,21 +101,21 @@ export default function ChatWindow({ currentUser, recipientId, recipientName, on
 
     const messageData = {
       senderId: currentUser.uid,
-      senderName: currentUser.displayName || currentUser.email.split('@')[0],
+      senderName: currentUser.displayName || currentUser.email.split("@")[0],
       receiverId: recipientId,
       receiverName: recipientName,
       message: newMessage.trim(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     socketService.sendMessage(messageData);
-    setNewMessage('');
+    setNewMessage("");
   };
 
   const getTimeDifference = (timestamp) => {
     const now = Date.now();
     const diff = now - timestamp;
-    
+
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -118,21 +123,16 @@ export default function ChatWindow({ currentUser, recipientId, recipientName, on
     if (days > 0) return `${days}d ago`;
     if (hours > 0) return `${hours}h ago`;
     if (minutes > 0) return `${minutes}m ago`;
-    return 'Just now';
+    return "Just now";
   };
 
   return (
     <div className="chat-window-container">
-      {/* Back button */}
       <button className="back-to-list-btn" onClick={onBack}>
         ← Back to chats
       </button>
-
-      {/* Messages area */}
       <div className="chat-messages-area">
-        {loading && (
-          <div className="chat-loading">Loading messages...</div>
-        )}
+        {loading && <div className="chat-loading">Loading messages...</div>}
 
         {!loading && messages.length === 0 && (
           <div className="no-messages-yet">
@@ -143,12 +143,12 @@ export default function ChatWindow({ currentUser, recipientId, recipientName, on
 
         {!loading && messages.length > 0 && (
           <>
-            {messages.map(message => {
+            {messages.map((message) => {
               const isSent = message.senderId === currentUser.uid;
               return (
                 <div
                   key={message.id}
-                  className={`chat-message ${isSent ? 'sent' : 'received'}`}
+                  className={`chat-message ${isSent ? "sent" : "received"}`}
                 >
                   <div className="message-bubble">
                     <p className="message-text">{message.text}</p>
@@ -163,8 +163,6 @@ export default function ChatWindow({ currentUser, recipientId, recipientName, on
           </>
         )}
       </div>
-
-      {/* Input area */}
       <form className="chat-input-area" onSubmit={handleSendMessage}>
         <input
           type="text"
@@ -175,8 +173,8 @@ export default function ChatWindow({ currentUser, recipientId, recipientName, on
           disabled={loading}
           maxLength={1000}
         />
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="chat-send-btn"
           disabled={!newMessage.trim() || loading}
         >

@@ -1,6 +1,3 @@
-// backend/models/userModel.js
-// User Model - Defines user data structure and validation
-
 const { db } = require("../config/firebase");
 
 class User {
@@ -8,7 +5,7 @@ class User {
     this.uid = data.uid;
     this.email = data.email;
     this.displayName = data.displayName || data.email.split("@")[0];
-    this.role = data.role || "user"; // 'user' or 'admin'
+    this.role = data.role || "user";
     this.friends = data.friends || {};
     this.sentRequests = data.sentRequests || {};
     this.receivedRequests = data.receivedRequests || {};
@@ -16,8 +13,6 @@ class User {
     this.createdAt = data.createdAt || Date.now();
     this.updatedAt = Date.now();
   }
-
-  // Convert to plain object for database
   toJSON() {
     return {
       uid: this.uid,
@@ -33,7 +28,6 @@ class User {
     };
   }
 
-  // Validation
   static validate(data) {
     const errors = [];
 

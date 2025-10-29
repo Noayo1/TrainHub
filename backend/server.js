@@ -1,6 +1,3 @@
-// backend/server.js
-// Main Express Server Entry Point
-
 const express = require("express");
 const cors = require("cors");
 const http = require("http");

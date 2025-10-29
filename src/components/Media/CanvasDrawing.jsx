@@ -1,6 +1,3 @@
-// CanvasDrawing.jsx - Canvas Drawing Tool
-// Responsibility: Provide drawing interface and export image
-
 import { useRef, useState, useEffect } from "react";
 import "../../styles/Canvas.css";
 
@@ -9,7 +6,7 @@ export default function CanvasDrawing({ onSave, onCancel }) {
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState("#1da1f2");
   const [brushSize, setBrushSize] = useState(3);
-  const [tool, setTool] = useState("brush"); // brush or eraser
+  const [tool, setTool] = useState("brush");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -17,15 +14,11 @@ export default function CanvasDrawing({ onSave, onCancel }) {
 
     const ctx = canvas.getContext("2d");
 
-    // Set canvas size
     canvas.width = 600;
     canvas.height = 400;
 
-    // Set white background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Set initial drawing style
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
   }, []);
@@ -49,11 +42,9 @@ export default function CanvasDrawing({ onSave, onCancel }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
-
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Set drawing style based on tool
     if (tool === "eraser") {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = brushSize * 3;
@@ -80,23 +71,19 @@ export default function CanvasDrawing({ onSave, onCancel }) {
 
   const handleSave = () => {
     const canvas = canvasRef.current;
-
-    // Convert canvas to data URL (base64 image)
     const dataURL = canvas.toDataURL("image/png");
-
-    // Pass the image data to parent
     onSave(dataURL);
   };
 
   const colors = [
-    "#1da1f2", // Blue
-    "#e74c3c", // Red
-    "#2ecc71", // Green
-    "#f39c12", // Orange
-    "#9b59b6", // Purple
-    "#000000", // Black
-    "#ffffff", // White
-    "#34495e", // Dark gray
+    "#1da1f2",
+    "#e74c3c",
+    "#2ecc71",
+    "#f39c12",
+    "#9b59b6",
+    "#000000",
+    "#ffffff",
+    "#34495e",
   ];
 
   return (
@@ -107,8 +94,6 @@ export default function CanvasDrawing({ onSave, onCancel }) {
           ✕
         </button>
       </div>
-
-      {/* Canvas */}
       <div className="canvas-wrapper">
         <canvas
           ref={canvasRef}
@@ -119,10 +104,7 @@ export default function CanvasDrawing({ onSave, onCancel }) {
           onMouseLeave={stopDrawing}
         />
       </div>
-
-      {/* Tools Panel */}
       <div className="canvas-tools">
-        {/* Tool Selection */}
         <div className="tool-section">
           <label className="tool-label">Tool:</label>
           <div className="tool-buttons">
@@ -142,8 +124,6 @@ export default function CanvasDrawing({ onSave, onCancel }) {
             </button>
           </div>
         </div>
-
-        {/* Color Picker */}
         {tool === "brush" && (
           <div className="tool-section">
             <label className="tool-label">Color:</label>
@@ -160,8 +140,6 @@ export default function CanvasDrawing({ onSave, onCancel }) {
             </div>
           </div>
         )}
-
-        {/* Brush Size */}
         <div className="tool-section">
           <label className="tool-label">
             Size: <strong>{brushSize}px</strong>
@@ -175,8 +153,6 @@ export default function CanvasDrawing({ onSave, onCancel }) {
             onChange={(e) => setBrushSize(parseInt(e.target.value))}
           />
         </div>
-
-        {/* Action Buttons */}
         <div className="tool-section">
           <div className="action-buttons">
             <button className="clear-btn" onClick={clearCanvas}>
@@ -191,8 +167,6 @@ export default function CanvasDrawing({ onSave, onCancel }) {
           </div>
         </div>
       </div>
-
-      {/* Drawing Tips */}
       <div className="canvas-tips">
         <p>
           💡 <strong>Tips:</strong> Use your mouse to draw. Choose colors and

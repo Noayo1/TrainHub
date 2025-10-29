@@ -1,4 +1,3 @@
-// EditProfileModal.jsx - Profile Editing Modal
 import { useState, useRef } from "react";
 import { getDatabase, ref, update } from "firebase/database";
 import {
@@ -43,13 +42,10 @@ export default function EditProfileModal({
   const handleProfilePictureChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         alert("Please select an image file");
         return;
       }
-
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("Image size should be less than 5MB");
         return;
@@ -57,7 +53,6 @@ export default function EditProfileModal({
 
       setProfilePicture(file);
 
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePicturePreview(reader.result);
@@ -74,7 +69,6 @@ export default function EditProfileModal({
       const db = getDatabase();
       const updates = { ...formData };
 
-      // Upload profile picture if selected
       if (profilePicture) {
         const storage = getStorage();
         const imageRef = storageRef(
@@ -88,8 +82,6 @@ export default function EditProfileModal({
         const downloadURL = await getDownloadURL(imageRef);
         updates.profilePictureUrl = downloadURL;
       }
-
-      // Update user profile in Firebase
       await update(ref(db, `users/${currentUser.uid}`), updates);
 
       alert("Profile updated successfully!");
@@ -114,7 +106,6 @@ export default function EditProfileModal({
         </div>
 
         <form onSubmit={handleSubmit} className="edit-profile-form">
-          {/* Profile Picture Section */}
           <div className="form-section">
             <h3>Profile Picture</h3>
             <div className="profile-picture-section">
@@ -159,8 +150,6 @@ export default function EditProfileModal({
               </div>
             </div>
           </div>
-
-          {/* Personal Information */}
           <div className="form-section">
             <h3>Personal Information</h3>
 
@@ -189,7 +178,6 @@ export default function EditProfileModal({
             </div>
           </div>
 
-          {/* Sports & Fitness */}
           <div className="form-section">
             <h3>Sports & Fitness</h3>
 
@@ -250,8 +238,6 @@ export default function EditProfileModal({
               />
             </div>
           </div>
-
-          {/* Action Buttons */}
           <div className="modal-actions">
             <button
               type="button"

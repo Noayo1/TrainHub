@@ -1,15 +1,12 @@
-// CommentSection.jsx
-// Responsibility: Display comments list and new comment form
-
 import { useState } from "react";
 import CommentItem from "./CommentItem";
 
-export default function CommentSection({ 
-  postId, 
-  comments, 
-  currentUser, 
-  onAddComment, 
-  onDeleteComment 
+export default function CommentSection({
+  postId,
+  comments,
+  currentUser,
+  onAddComment,
+  onDeleteComment,
 }) {
   const [newComment, setNewComment] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -17,14 +14,14 @@ export default function CommentSection({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-    
+
     await onAddComment(postId, newComment);
     setNewComment("");
   };
 
   return (
     <div className="comment-section">
-      <button 
+      <button
         className="toggle-comments-btn"
         onClick={() => setIsExpanded(!isExpanded)}
       >

@@ -1,5 +1,4 @@
-// CommentItem.jsx - Updated with clickable commenter name
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 export default function CommentItem({ comment, currentUser, onDeleteComment }) {
   const navigate = useNavigate();
@@ -30,23 +29,25 @@ export default function CommentItem({ comment, currentUser, onDeleteComment }) {
     <div className="comment-item">
       <div className="comment-header">
         <div className="comment-author-info">
-          <div 
+          <div
             className="comment-avatar"
-            onClick={handleAuthorClick} 
-            style={{ cursor: "pointer" }} 
+            onClick={handleAuthorClick}
+            style={{ cursor: "pointer" }}
           >
             {getInitial(comment.authorName)}
           </div>
           <div className="comment-details">
-            <span 
+            <span
               className="comment-author-name"
               onClick={handleAuthorClick}
-              style={{ 
+              style={{
                 cursor: "pointer",
-                transition: "color 0.2s ease"
+                transition: "color 0.2s ease",
               }}
-              onMouseEnter={(e) => e.target.style.color = "#1da1f2"}
-              onMouseLeave={(e) => e.target.style.color = "var(--text-primary)"}
+              onMouseEnter={(e) => (e.target.style.color = "#1da1f2")}
+              onMouseLeave={(e) =>
+                (e.target.style.color = "var(--text-primary)")
+              }
             >
               {comment.authorName}
             </span>

@@ -1,6 +1,3 @@
-// backend/models/postModel.js
-// Post Model - Defines post data structure and validation
-
 const { db } = require("../config/firebase");
 
 class Post {
@@ -10,14 +7,12 @@ class Post {
     this.authorName = data.authorName;
     this.content = data.content;
     this.mediaUrl = data.mediaUrl || null;
-    this.mediaType = data.mediaType || null; // 'image', 'video', or null
-    this.groupId = data.groupId || null; // null means it's a personal post
-    this.likes = data.likes || {};
+    this.mediaType = data.mediaType || null;
+    this.groupId = data.groupId || null;
     this.comments = data.comments || {};
     this.createdAt = data.createdAt || Date.now();
     this.updatedAt = Date.now();
   }
-  // Convert to plain object for database
   toJSON() {
     return {
       id: this.id,
@@ -34,7 +29,6 @@ class Post {
     };
   }
 
-  // Validation
   static validate(data) {
     const errors = [];
 

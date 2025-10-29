@@ -1,10 +1,6 @@
-// backend/controllers/chatController.js
-// Chat Controller - Handles chat-related REST API operations
-
 const { db } = require("../config/firebase");
 const Message = require("../models/chatModel");
 
-// Get chat history between two users
 exports.getChatHistory = async (req, res) => {
   try {
     const { userId1, userId2 } = req.params;
@@ -16,14 +12,12 @@ exports.getChatHistory = async (req, res) => {
       return res.status(200).json({ messages: [] });
     }
 
-    // Filter messages between these two users
     let messages = Object.values(allMessages).filter(
       (msg) =>
         (msg.senderId === userId1 && msg.receiverId === userId2) ||
         (msg.senderId === userId2 && msg.receiverId === userId1)
     );
 
-    // Sort by timestamp
     messages.sort((a, b) => a.timestamp - b.timestamp);
 
     res.status(200).json({ messages, count: messages.length });
@@ -35,7 +29,6 @@ exports.getChatHistory = async (req, res) => {
   }
 };
 
-// Get all conversations for a user
 exports.getUserConversations = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -46,13 +39,10 @@ exports.getUserConversations = async (req, res) => {
     if (!allMessages) {
       return res.status(200).json({ conversations: [] });
     }
-
-    // Get all messages involving this user
     const userMessages = Object.values(allMessages).filter(
       (msg) => msg.senderId === userId || msg.receiverId === userId
     );
 
-    // Group by conversation partner
     const conversationsMap = new Map();
 
     userMessages.forEach((msg) => {
@@ -73,20 +63,15 @@ exports.getUserConversations = async (req, res) => {
 
       const conversation = conversationsMap.get(partnerId);
       conversation.messages.push(msg);
-
-      // Count unread messages
       if (msg.receiverId === userId && !msg.read) {
         conversation.unreadCount++;
       }
-
-      // Update last message if this one is newer
       if (msg.timestamp > conversation.lastMessageTime) {
         conversation.lastMessage = msg.message;
         conversation.lastMessageTime = msg.timestamp;
       }
     });
 
-    // Convert to array and sort by last message time
     const conversations = Array.from(conversationsMap.values()).sort(
       (a, b) => b.lastMessageTime - a.lastMessageTime
     );
@@ -100,7 +85,6 @@ exports.getUserConversations = async (req, res) => {
   }
 };
 
-// Mark messages as read
 exports.markMessagesAsRead = async (req, res) => {
   try {
     const { userId, partnerId } = req.params;
@@ -112,7 +96,6 @@ exports.markMessagesAsRead = async (req, res) => {
       return res.status(200).json({ message: "No messages to mark as read" });
     }
 
-    // Find unread messages from partner to user
     const updates = {};
     Object.entries(allMessages).forEach(([messageId, msg]) => {
       if (
@@ -143,7 +126,6 @@ exports.markMessagesAsRead = async (req, res) => {
   }
 };
 
-// Delete a message
 exports.deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -156,7 +138,6 @@ exports.deleteMessage = async (req, res) => {
       return res.status(404).json({ error: "Message not found" });
     }
 
-    // Only sender can delete their message
     if (message.senderId !== userId) {
       return res
         .status(403)

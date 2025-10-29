@@ -13,7 +13,6 @@ export default function GroupDetail({
   members,
   loading,
 
-  // Callbacks
   onCreateGroupPost,
   onLikePost,
   onUpdatePost,
@@ -68,12 +67,9 @@ export default function GroupDetail({
 
   return (
     <div className="group-detail-container">
-      {/* Back Button */}
       <button className="back-button" onClick={onBack}>
         ← Back
       </button>
-
-      {/* Group Header */}
       <div className="group-header-card">
         <div className="group-cover">
           <div className="group-icon-large">
@@ -101,8 +97,6 @@ export default function GroupDetail({
               )}
             </div>
           </div>
-
-          {/* Group Actions */}
           <div className="group-actions">
             {isAdmin && (
               <button
@@ -123,7 +117,6 @@ export default function GroupDetail({
           </div>
         </div>
 
-        {/* Group Stats */}
         <div className="group-stats">
           <div className="stat-item">
             <span className="stat-number">{memberCount}</span>
@@ -142,7 +135,6 @@ export default function GroupDetail({
         </div>
       </div>
 
-      {/* Members Section */}
       <div className="group-members-section">
         <h3>Members ({memberCount})</h3>
         <div className="members-list">
@@ -169,7 +161,6 @@ export default function GroupDetail({
         </div>
       </div>
 
-      {/* Create Post Section (Only for members) */}
       {isMember && (
         <div className="group-post-form-card">
           <h2>Share in {group.name}</h2>
@@ -188,7 +179,6 @@ export default function GroupDetail({
         </div>
       )}
 
-      {/* Group Posts Section */}
       <div className="group-posts-section">
         <h2>Group Posts</h2>
 

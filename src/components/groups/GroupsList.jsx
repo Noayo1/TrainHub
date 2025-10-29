@@ -1,4 +1,3 @@
-// GroupsList.jsx - Updated with Simple Search Bar + Advanced + Create Group Buttons
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,14 +13,11 @@ export default function GroupsList({
 }) {
   const navigate = useNavigate();
 
-  // Create group state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Advanced search parameters (3+)
   const [nameFilter, setNameFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [minMembers, setMinMembers] = useState("");
@@ -61,9 +57,7 @@ export default function GroupsList({
     navigate(`/group/${groupId}`);
   };
 
-  // Filtering logic
   const filteredGroups = groups.filter((group) => {
-    // Simple search (when advanced is closed)
     if (!showAdvanced && searchQuery.trim()) {
       const groupName = group.name || "";
       const groupDesc = group.description || "";
@@ -77,7 +71,6 @@ export default function GroupsList({
       }
     }
 
-    // Advanced search (when advanced is open)
     if (showAdvanced) {
       // Parameter 1: Name filter
       if (nameFilter.trim()) {
@@ -124,8 +117,6 @@ export default function GroupsList({
     <div className="groups-list-container">
       <div className="groups-header">
         <h2>Groups</h2>
-
-        {/* ✅ NEW: Search Bar with Advanced + Create Group Buttons on the Right */}
         <div className="search-bar-wrapper">
           <input
             type="text"
@@ -150,7 +141,6 @@ export default function GroupsList({
         </div>
       </div>
 
-      {/* Create Group Form */}
       {showCreateForm && (
         <form onSubmit={handleCreateGroup} className="create-group-form">
           <input
@@ -181,8 +171,6 @@ export default function GroupsList({
           </button>
         </form>
       )}
-
-      {/* Advanced Search Panel */}
       {showAdvanced && (
         <div className="advanced-search-panel">
           <h3 className="search-panel-title"> Advanced Search</h3>
@@ -240,7 +228,6 @@ export default function GroupsList({
               />
             </div>
 
-            {/* Reset Button */}
             <div className="search-field-inline">
               <label>&nbsp;</label>
               <button
@@ -252,7 +239,6 @@ export default function GroupsList({
             </div>
           </div>
 
-          {/* Search Results Count */}
           <div className="search-results-count">
             <p>
               Showing <strong>{filteredGroups.length}</strong> of{" "}
@@ -268,7 +254,6 @@ export default function GroupsList({
         </div>
       )}
 
-      {/* Groups Grid */}
       <div className="groups-grid">
         {filteredGroups.length === 0 ? (
           <div className="no-groups-found">

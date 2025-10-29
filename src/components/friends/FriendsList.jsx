@@ -1,6 +1,3 @@
-// FriendsList.jsx - Updated with Profile Pictures
-// ✅ FIXED: Now loads and displays user profile pictures
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDatabase, ref, onValue } from "firebase/database";
@@ -17,18 +14,13 @@ export default function FriendsList({
   onRemoveFriend,
 }) {
   const navigate = useNavigate();
-  const [usersData, setUsersData] = useState({}); // ✅ NEW: Store all user data with profile pictures
-
-  // Simple search state
+  const [usersData, setUsersData] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Advanced search parameters (3+)
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // ✅ NEW: Load all users data (including profile pictures)
   useEffect(() => {
     const db = getDatabase();
     const usersRef = ref(db, "users");
@@ -60,12 +52,8 @@ export default function FriendsList({
     navigate(`/profile/${userId}`);
   };
 
-  // Filtering logic
   const filteredUsers = users.filter((user) => {
-    // Exclude current user
     if (user.id === currentUser?.uid) return false;
-
-    // Simple search (when advanced is closed)
     if (!showAdvanced && searchQuery.trim()) {
       const userName = user.displayName || user.email?.split("@")[0] || "";
       const userEmail = user.email || "";
@@ -79,7 +67,6 @@ export default function FriendsList({
       }
     }
 
-    // Advanced search (when advanced is open)
     if (showAdvanced) {
       // Parameter 1: Name filter
       if (nameFilter.trim()) {
@@ -138,7 +125,6 @@ export default function FriendsList({
         </div>
       </div>
 
-      {/* Advanced Search Panel */}
       {showAdvanced && (
         <div className="advanced-search-panel">
           <h3 className="search-panel-title"> Advanced Search</h3>
@@ -194,8 +180,6 @@ export default function FriendsList({
               </button>
             </div>
           </div>
-
-          {/* Search Results Count */}
           <div className="search-results-count">
             <p>
               Showing <strong>{filteredUsers.length}</strong> of{" "}
@@ -208,11 +192,10 @@ export default function FriendsList({
         </div>
       )}
 
-      {/* Users Grid */}
       <div className="users-grid">
         {filteredUsers.length === 0 ? (
           <div className="no-users-found">
-            <p>❌ No users found matching your search criteria.</p>
+            <p>No users found matching your search criteria.</p>
           </div>
         ) : (
           filteredUsers.map((user) => {
@@ -220,7 +203,6 @@ export default function FriendsList({
 
             return (
               <div key={user.id} className="user-card">
-                {/* ✅ FIXED: Show profile picture or default avatar */}
                 <div
                   className="user-avatar-large"
                   onClick={() => handleUserClick(user.id)}

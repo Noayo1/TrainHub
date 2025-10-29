@@ -1,12 +1,7 @@
-// backend/middleware/authMiddleware.js
-// Authentication Middleware - Verify Firebase tokens
-
 const { admin } = require("../config/firebase");
 
-// Verify Firebase ID token
 exports.verifyToken = async (req, res, next) => {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -14,11 +9,8 @@ exports.verifyToken = async (req, res, next) => {
     }
 
     const token = authHeader.split("Bearer ")[1];
-
-    // Verify token with Firebase Admin
     const decodedToken = await admin.auth().verifyIdToken(token);
 
-    // Add user info to request
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
@@ -31,13 +23,10 @@ exports.verifyToken = async (req, res, next) => {
   }
 };
 
-// Check if user is admin
 exports.isAdmin = async (req, res, next) => {
   try {
     const { db } = require("../config/firebase");
     const userId = req.user.uid;
-
-    // Get user from database
     const snapshot = await db.ref(`users/${userId}`).once("value");
     const user = snapshot.val();
 

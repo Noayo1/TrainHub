@@ -1,7 +1,3 @@
-// UserProfile.jsx - WITH COVER PHOTO (Original Design Restored)
-// Responsibility: PURE DISPLAY COMPONENT
-// Receives ALL data via props, calls parent via callbacks
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PostList from "../Feed/PostList";
@@ -9,7 +5,6 @@ import EditProfileModal from "./EditProfileModal";
 import "../../styles/UserProfile.css";
 
 export default function UserProfile({
-  // Data props (from parent)
   profileUser,
   userPosts,
   currentUser,
@@ -17,7 +12,6 @@ export default function UserProfile({
   sentRequests,
   loading,
 
-  // Callback props (to parent)
   onLikePost,
   onUpdatePost,
   onDeletePost,
@@ -113,18 +107,12 @@ export default function UserProfile({
 
   return (
     <div className="user-profile-container">
-      {/* Back Button */}
       <button className="back-button" onClick={onBack}>
         ← Back
       </button>
-
-      {/* ✅ Profile Header WITH COVER PHOTO (Restored) */}
       <div className="profile-header-card">
-        {/* ✅ Cover Photo - RESTORED */}
         <div className="profile-cover-photo" />
-
         <div className="profile-main-info">
-          {/* ✅ Profile Picture or Default Avatar */}
           {profileUser.profilePictureUrl ? (
             <img
               src={profileUser.profilePictureUrl}
@@ -156,8 +144,6 @@ export default function UserProfile({
 
             <p className="profile-email">{profileUser.email}</p>
           </div>
-
-          {/* Action Buttons */}
           <div className="profile-actions">
             {!isOwnProfile && (
               <>
@@ -200,8 +186,6 @@ export default function UserProfile({
             )}
           </div>
         </div>
-
-        {/* Profile Stats */}
         <div className="profile-stats">
           <div className="stat-item">
             <span className="stat-number">{userPosts.length}</span>
@@ -222,8 +206,6 @@ export default function UserProfile({
             <span className="stat-label">Joined</span>
           </div>
         </div>
-
-        {/* Additional Profile Info - Sports & Personal Details */}
         {(profileUser.favoriteSport ||
           profileUser.activityLevel ||
           profileUser.lifeStatus ||

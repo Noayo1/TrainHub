@@ -1,6 +1,3 @@
-// src/services/api.js
-// API Service - Handles all backend API calls
-
 const API_BASE_URL = "http://localhost:5000/api";
 
 const apiRequest = async (endpoint, options = {}) => {

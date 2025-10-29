@@ -1,6 +1,3 @@
-// ProfileContainer.jsx - FIXED WITH BACKEND INTEGRATION
-// Responsibility: Fetch and manage profile data
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
