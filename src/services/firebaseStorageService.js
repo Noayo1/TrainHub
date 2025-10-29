@@ -1,6 +1,3 @@
-// firebaseStorageService.js - OPTIMIZED VERSION with Image Compression
-// Fixes slow uploads by compressing images before upload!
-
 import { storage } from "../components/firebase";
 import {
   ref,
@@ -12,8 +9,8 @@ import {
 class FirebaseStorageService {
   /**
    * Compress image before upload (makes uploads MUCH faster!)
-   * @param {File} file - Image file to compress
-   * @returns {Promise<File>} Compressed image file
+   * @param {File} file
+   * @returns {Promise<File>}
    */
   async compressImage(file) {
     return new Promise((resolve) => {
@@ -21,11 +18,8 @@ class FirebaseStorageService {
       reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-          // Create canvas for compression
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
-
-          // ✅ Resize large images (max 1920x1080)
           let width = img.width;
           let height = img.height;
           const maxWidth = 1920;
@@ -44,20 +38,16 @@ class FirebaseStorageService {
           canvas.width = width;
           canvas.height = height;
 
-          // Draw and compress
           ctx.drawImage(img, 0, 0, width, height);
-
-          // Convert to blob with 0.8 quality (80%)
           canvas.toBlob(
             (blob) => {
-              // Create new file from compressed blob
               const compressedFile = new File([blob], file.name, {
                 type: "image/jpeg",
                 lastModified: Date.now(),
               });
 
               console.log(
-                `📦 Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(
+                `Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(
                   compressedFile.size /
                   1024 /
                   1024
@@ -89,11 +79,9 @@ class FirebaseStorageService {
         return;
       }
 
-      // Create unique filename
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(7);
       const filename = `${folder}/${timestamp}_${randomId}_${file.name}`;
-
       const storageRef = ref(storage, filename);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -136,16 +124,12 @@ class FirebaseStorageService {
     for (let i = 0; i < files.length; i++) {
       let file = files[i];
 
-      // Validate it's an image
       if (!file.type.startsWith("image/")) {
         throw new Error(`${file.name} is not an image`);
       }
-
-      // ✅ Compress image before upload (FASTER!)
-      console.log(`🔄 Compressing image ${i + 1}/${totalFiles}...`);
+      console.log(` Compressing image ${i + 1}/${totalFiles}...`);
       file = await this.compressImage(file);
 
-      // Upload compressed image
       const url = await this.uploadFile(file, "posts/images", (progress) => {
         if (onProgress) {
           const overallProgress = (i * 100 + progress) / totalFiles;
@@ -166,18 +150,13 @@ class FirebaseStorageService {
    * @returns {Promise<string>} Download URL
    */
   async uploadVideo(file, onProgress = null) {
-    // Validate it's a video
     if (!file.type.startsWith("video/")) {
       throw new Error("File must be a video");
     }
 
-    // Videos are uploaded as-is (no compression)
     return this.uploadFile(file, "posts/videos", onProgress);
   }
 
-  /**
-   * Delete file from storage
-   */
   async deleteFile(url) {
     try {
       const fileRef = ref(storage, url);
@@ -188,18 +167,12 @@ class FirebaseStorageService {
     }
   }
 
-  /**
-   * Get file type
-   */
   getFileType(file) {
     if (file.type.startsWith("image/")) return "image";
     if (file.type.startsWith("video/")) return "video";
     return "unknown";
   }
 
-  /**
-   * Get file size
-   */
   getFileSize(file) {
     const bytes = file.size;
     if (bytes < 1024) return bytes + " B";
