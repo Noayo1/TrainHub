@@ -270,7 +270,7 @@ export default function FloatingChat({ currentUser }) {
                   <input
                     type="text"
                     className="chat-search-input"
-                    placeholder="🔍 Search friends..."
+                    placeholder="Search friends..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
