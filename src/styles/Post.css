@@ -1,10 +1,5 @@
-/* Post.css - Complete Post Styling with Group Badge + Profile Pictures */
-/* ✅ UPDATED: Added support for profile pictures in author avatars */
 @import './variables.css';
 
-/* ========================================
-   POST CARD
-   ======================================== */
 
 .post-card {
     background: var(--gradient-card);
@@ -15,16 +10,13 @@
     border: 1px solid var(--border-color);
     transition: all var(--transition-normal);
     animation: fadeIn 0.4s ease;
+    cursor: "pointer";
 }
 
 .post-card:hover {
     border-color: var(--border-hover);
     box-shadow: var(--shadow-lg);
 }
-
-/* ========================================
-   POST HEADER
-   ======================================== */
 
 .post-header {
     display: flex;
@@ -38,8 +30,6 @@
     gap: var(--spacing-sm);
     align-items: flex-start;
 }
-
-/* ✅ UPDATED: Author avatar now supports both profile pictures and text initials */
 .author-avatar {
     width: 48px;
     height: 48px;
@@ -55,17 +45,13 @@
     flex-shrink: 0;
     transition: all var(--transition-normal);
     overflow: hidden;
-    /* ✅ NEW: Ensures images fit perfectly */
     border: 2px solid var(--border-color);
-    /* ✅ NEW: Border for images */
     cursor: pointer;
-    /* ✅ NEW: Indicates clickable */
+           
 }
-
-/* ✅ NEW: Image styling inside author avatar */
 .author-avatar img {
-    width: 100%;
-    height: 100%;
+    width: "100%";
+    height: "100%";
     object-fit: cover;
     border-radius: var(--radius-full);
 }
@@ -74,7 +60,7 @@
     transform: scale(1.1);
     box-shadow: var(--shadow-glow);
     border-color: var(--primary-color);
-    /* ✅ NEW: Highlight on hover */
+
 }
 
 .author-details {
@@ -89,7 +75,7 @@
     color: var(--text-primary);
     margin: 0;
     cursor: pointer;
-    /* ✅ NEW: Indicates clickable */
+    cursor: "pointer";
     transition: color var(--transition-fast);
 }
 
@@ -103,9 +89,7 @@
     color: var(--text-muted);
 }
 
-/* ========================================
-   GROUP BADGE IN POSTS
-   ======================================== */
+
 
 .post-group-badge {
     display: inline-flex;
@@ -139,9 +123,6 @@
     color: white;
 }
 
-/* ========================================
-   POST ACTIONS MENU
-   ======================================== */
 
 .post-actions-menu {
     display: flex;
@@ -179,10 +160,6 @@
     transform: translateY(-2px);
 }
 
-/* ========================================
-   POST CONTENT
-   ======================================== */
-
 .post-content {
     margin-bottom: var(--spacing-md);
 }
@@ -195,8 +172,6 @@
     white-space: pre-wrap;
     word-wrap: break-word;
 }
-
-/* Edit Form */
 .edit-post-form {
     display: flex;
     flex-direction: column;
@@ -262,9 +237,7 @@
     border-color: var(--accent-red);
 }
 
-/* ========================================
-   POST MEDIA (Images, Video, Canvas)
-   ======================================== */
+
 
 .post-media-container {
     margin: var(--spacing-md) 0;
@@ -313,9 +286,6 @@
     background: black;
 }
 
-/* ========================================
-   POST ACTIONS (Like, Comment Count)
-   ======================================== */
 
 .post-actions {
     display: flex;
@@ -375,9 +345,6 @@
     color: var(--text-secondary);
 }
 
-/* ========================================
-   COMMENTS SECTION
-   ======================================== */
 
 .comments-section {
     display: flex;
@@ -392,13 +359,15 @@
     background: var(--bg-hover);
     border-radius: var(--radius-md);
     transition: all var(--transition-fast);
+    width: "100%";
+    height: "100%";
 }
 
 .comment-item:hover {
     background: var(--bg-dark);
 }
 
-/* ✅ UPDATED: Comment avatar now supports both profile pictures and text initials */
+
 .comment-avatar {
     width: 36px;
     height: 36px;
@@ -413,12 +382,9 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
     overflow: hidden;
-    /* ✅ NEW: Ensures images fit perfectly */
     border: 2px solid var(--border-color);
-    /* ✅ NEW: Border for images */
 }
 
-/* ✅ NEW: Image styling inside comment avatar */
 .comment-avatar img {
     width: 100%;
     height: 100%;
@@ -476,10 +442,6 @@
     transform: scale(1.2);
 }
 
-/* ========================================
-   ADD COMMENT FORM
-   ======================================== */
-
 .add-comment-form {
     margin-top: var(--spacing-sm);
 }
@@ -532,10 +494,6 @@
     transform: translateY(0);
 }
 
-/* ========================================
-   RESPONSIVE DESIGN
-   ======================================== */
-
 @media (max-width: 768px) {
     .post-card {
         padding: var(--spacing-md);
@@ -584,9 +542,7 @@
     }
 }
 
-/* ========================================
-   ANIMATIONS
-   ======================================== */
+
 
 @keyframes fadeIn {
     from {

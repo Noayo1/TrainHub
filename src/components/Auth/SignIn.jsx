@@ -4,7 +4,7 @@ import { Input, Button } from "@mui/material";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import "../../styles/SignIn.css";
 
-export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
+export default function SignIn({ onSwitchToSignUp }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,15 +16,10 @@ export default function SignIn({ onUserLoggedIn, onSwitchToSignUp }) {
     setLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(auth, email, password);
       setError("");
       setEmail("");
       setPassword("");
-      onUserLoggedIn(userCredential.user);
     } catch (err) {
       console.error("Login error:", err);
 

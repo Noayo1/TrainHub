@@ -1,17 +1,7 @@
-// Feed.jsx - FINAL CORRECTED VERSION
-// All backend integrations + all imports fixed
-
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
 import { postAPI, groupAPI } from "../../services/api";
-import {
-  getDatabase,
-  ref,
-  onValue,
-  update,
-  remove,
-  push,
-} from "firebase/database";
+import { getDatabase, ref, onValue, update, remove } from "firebase/database";
 import Sidebar from "../SideBar/Sidebar";
 import CreatePost from "./CreatePost";
 import PostList from "./PostList";
@@ -117,7 +107,6 @@ export default function Feed() {
 
   useEffect(() => {
     if (!currentUser) return;
-
     if (currentView === "home") {
       const friendIds = Object.keys(friends);
       const filtered = posts.filter(
@@ -127,8 +116,6 @@ export default function Feed() {
           (post.groupId && groups.some((g) => g.members?.[currentUser.uid]))
       );
       setFilteredPosts(filtered);
-    } else {
-      setFilteredPosts(posts);
     }
   }, [currentView, posts, friends, currentUser, groups]);
 
@@ -442,10 +429,7 @@ export default function Feed() {
       <div className="feed-main">
         {currentView === "home" && (
           <>
-            <CreatePost
-              currentUser={currentUser}
-              onCreatePost={handleCreatePost}
-            />
+            <CreatePost onCreatePost={handleCreatePost} />
             <PostList
               posts={filteredPosts}
               currentUser={currentUser}

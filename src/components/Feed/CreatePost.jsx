@@ -3,23 +3,18 @@ import { useState } from "react";
 import CanvasDrawing from "../Media/CanvasDrawing";
 import firebaseStorageService from "../../services/firebaseStorageService";
 
-export default function CreatePost({ currentUser, onCreatePost }) {
+export default function CreatePost({ onCreatePost }) {
   const [newPostContent, setNewPostContent] = useState("");
   const [showCanvas, setShowCanvas] = useState(false);
   const [drawingImage, setDrawingImage] = useState(null);
-
-  // Multiple images + video in SAME post
-  const [images, setImages] = useState([]); // Array of image files
-  const [video, setVideo] = useState(null); // Single video file
+  const [images, setImages] = useState([]);
+  const [video, setVideo] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
-
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // ✅ FIX #2: Allow posts with ONLY media (no text required)
     if (
       !newPostContent.trim() &&
       !drawingImage &&
@@ -39,7 +34,7 @@ export default function CreatePost({ currentUser, onCreatePost }) {
 
       // Upload images to Firebase Storage
       if (images.length > 0) {
-        console.log(`📸 Uploading ${images.length} images...`);
+        console.log(`Uploading ${images.length} images...`);
         const imageFiles = images.map((img) => img.file);
         imageUrls = await firebaseStorageService.uploadImages(
           imageFiles,
@@ -47,12 +42,12 @@ export default function CreatePost({ currentUser, onCreatePost }) {
             setUploadProgress(progress * 0.6); // Images = 60% of progress
           }
         );
-        console.log(`✅ ${imageUrls.length} images uploaded`);
+        console.log(`${imageUrls.length} images uploaded`);
       }
 
       // Upload video to Firebase Storage
       if (video) {
-        console.log("🎥 Uploading video...");
+        console.log("Uploading video...");
         videoUrl = await firebaseStorageService.uploadVideo(
           video,
           (progress) => {
@@ -60,14 +55,14 @@ export default function CreatePost({ currentUser, onCreatePost }) {
             setUploadProgress(baseProgress + progress * 0.4); // Video = 40% of progress
           }
         );
-        console.log("✅ Video uploaded");
+        console.log("Video uploaded");
       }
 
       setUploadProgress(100);
 
       // Create post with both images AND video
       await onCreatePost(
-        newPostContent || "", // Empty string if no text
+        newPostContent || "",
         drawingImage,
         imageUrls.length > 0 ? imageUrls : null,
         videoUrl
@@ -81,7 +76,7 @@ export default function CreatePost({ currentUser, onCreatePost }) {
       setVideoPreview(null);
       setUploadProgress(0);
 
-      alert("✅ Post created successfully!");
+      alert("Post created successfully!");
     } catch (error) {
       console.error("Error creating post:", error);
       alert("Failed to create post: " + error.message);
@@ -110,7 +105,7 @@ export default function CreatePost({ currentUser, onCreatePost }) {
       return;
     }
 
-    const maxImageSize = 10 * 1024 * 1024; // 10MB per image
+    const maxImageSize = 10 * 1024 * 1024;
     const validImages = [];
 
     for (const file of files) {
@@ -135,7 +130,6 @@ export default function CreatePost({ currentUser, onCreatePost }) {
           id: Date.now() + Math.random(),
         });
 
-        // Update state when all are loaded
         if (
           validImages.length ===
           files.filter(
@@ -153,7 +147,6 @@ export default function CreatePost({ currentUser, onCreatePost }) {
     setImages((prev) => prev.filter((img) => img.id !== imageId));
   };
 
-  // Handle video selection (can coexist with images!)
   const handleVideoSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -173,7 +166,6 @@ export default function CreatePost({ currentUser, onCreatePost }) {
 
     setVideo(file);
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setVideoPreview(e.target.result);
@@ -338,7 +330,6 @@ export default function CreatePost({ currentUser, onCreatePost }) {
                 />
               </label>
 
-              {/* ✅ FIX #3: Video can be added WITH images */}
               <label
                 className="media-button"
                 title="Add video (max 50MB) - can be combined with images!"
@@ -370,14 +361,13 @@ export default function CreatePost({ currentUser, onCreatePost }) {
             </button>
           </div>
 
-          {/* Media info */}
           {(images.length > 0 || video) && (
             <div className="file-info">
               <small>
                 {images.length > 0 &&
-                  `📸 ${images.length} image${images.length > 1 ? "s" : ""}`}
+                  `${images.length} image${images.length > 1 ? "s" : ""}`}
                 {images.length > 0 && video && " + "}
-                {video && `🎥 ${firebaseStorageService.getFileSize(video)}`}
+                {video && `${firebaseStorageService.getFileSize(video)}`}
               </small>
             </div>
           )}

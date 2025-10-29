@@ -17,11 +17,10 @@ export default function Post({
   const [editContent, setEditContent] = useState(post.content || "");
   const [commentText, setCommentText] = useState("");
   const [groupInfo, setGroupInfo] = useState(null);
-  const [authorProfile, setAuthorProfile] = useState(null); // ✅ NEW: Author profile data
-  const [commentAuthors, setCommentAuthors] = useState({}); // ✅ NEW: Comment authors profiles
+  const [authorProfile, setAuthorProfile] = useState(null);
+  const [commentAuthors, setCommentAuthors] = useState({});
   const navigate = useNavigate();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (post.authorId) {
       const db = getDatabase();
@@ -38,7 +37,6 @@ export default function Post({
     }
   }, [post.authorId]);
 
-  // ✅ Load group info if post has groupId
   useEffect(() => {
     if (post.groupId) {
       const db = getDatabase();
@@ -55,7 +53,6 @@ export default function Post({
     }
   }, [post.groupId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (post.comments) {
       const db = getDatabase();
@@ -82,6 +79,7 @@ export default function Post({
         }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post.comments]);
 
   const handleEdit = () => {
@@ -182,11 +180,7 @@ export default function Post({
       {/* Post Header */}
       <div className="post-header">
         <div className="post-author-info">
-          <div
-            className="author-avatar"
-            onClick={handleAuthorClick}
-            style={{ cursor: "pointer" }}
-          >
+          <div className="author-avatar" onClick={handleAuthorClick}>
             {authorProfile?.profilePictureUrl ? (
               <img
                 src={authorProfile.profilePictureUrl}
@@ -206,10 +200,6 @@ export default function Post({
             <h3
               className="author-name"
               onClick={handleAuthorClick}
-              style={{
-                cursor: "pointer",
-                transition: "color 0.2s ease",
-              }}
               onMouseEnter={(e) => (e.target.style.color = "#1da1f2")}
               onMouseLeave={(e) =>
                 (e.target.style.color = "var(--text-primary)")
@@ -334,18 +324,11 @@ export default function Post({
 
           return (
             <div key={comment.id} className="comment-item">
-              {/* ✅ UPDATED: Show profile picture in comments */}
               <div className="comment-avatar">
                 {commentAuthor?.profilePictureUrl ? (
                   <img
                     src={commentAuthor.profilePictureUrl}
                     alt={comment.authorName}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "50%",
-                    }}
                   />
                 ) : (
                   getInitial(comment.authorName)
@@ -371,8 +354,6 @@ export default function Post({
             </div>
           );
         })}
-
-        {/* Add Comment Form */}
         <form onSubmit={handleCommentSubmit} className="add-comment-form">
           <div className="comment-input-wrapper">
             <input

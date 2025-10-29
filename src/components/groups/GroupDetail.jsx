@@ -57,7 +57,7 @@ export default function GroupDetail({
   if (!group) {
     return (
       <div className="group-not-found">
-        <h2>⚠️ Group Not Found</h2>
+        <h2>Group Not Found</h2>
         <p>This group doesn't exist or has been removed.</p>
         <button onClick={() => navigate("/")}>Back to Home</button>
       </div>

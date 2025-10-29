@@ -1,6 +1,3 @@
-// Dashboard.jsx - FIXED (removed unused imports)
-// Responsibility: Authentication and routing
-
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -13,6 +10,7 @@ import GroupContainer from "./groups/GroupContainer";
 import SignIn from "./Auth/SignIn";
 import SignUp from "./Auth/SignUp";
 import FloatingChat from "./Chat/FloatingChat";
+import "../styles/Dashboard.css";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -27,7 +25,6 @@ export default function Dashboard() {
       if (currentUser) {
         await initializeUserData(currentUser);
         setUser(currentUser);
-
         socketService.connect(
           currentUser.uid,
           currentUser.displayName || currentUser.email.split("@")[0]
@@ -48,7 +45,6 @@ export default function Dashboard() {
   const initializeUserData = async (currentUser) => {
     try {
       const response = await userAPI.getUser(currentUser.uid);
-
       if (!response.user) {
         await userAPI.createUser({
           uid: currentUser.uid,
@@ -75,10 +71,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleUserLoggedIn = async (loggedInUser) => {
-    // onAuthStateChanged listener will handle the rest
-  };
-
   const handleSignOut = async () => {
     try {
       socketService.disconnect();
@@ -92,16 +84,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          background: "var(--bg-dark)",
-          color: "var(--text-primary)",
-        }}
-      >
+      <div className="dashboard-loading">
         <h2>Loading...</h2>
       </div>
     );
@@ -111,45 +94,15 @@ export default function Dashboard() {
     <div>
       {user ? (
         <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "16px 24px",
-              background: "var(--gradient-secondary)",
-              borderBottom: "1px solid var(--border-color)",
-            }}
-          >
-            <h2
-              style={{
-                margin: 0,
-                fontFamily: "PoppinsBlack, sans-serif",
-                fontSize: "24px",
-                color: "var(--text-primary)",
-                cursor: "pointer",
-              }}
-              onClick={() => navigate("/")}
-            >
+          <div className="dashboard-header">
+            <h2 className="dashboard-logo" onClick={() => navigate("/")}>
               TrainHub
             </h2>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <span style={{ color: "var(--text-secondary)" }}>
+            <div className="dashboard-user-section">
+              <span className="dashboard-welcome">
                 Welcome, {user.displayName || user.email}!
               </span>
-              <button
-                onClick={handleSignOut}
-                style={{
-                  padding: "8px 16px",
-                  background: "var(--accent-red)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "var(--radius-md)",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
+              <button onClick={handleSignOut} className="dashboard-signout-btn">
                 Sign Out
               </button>
             </div>
@@ -165,10 +118,7 @@ export default function Dashboard() {
           {showSignUp ? (
             <SignUp onSwitchToSignIn={() => setShowSignUp(false)} />
           ) : (
-            <SignIn
-              onUserLoggedIn={handleUserLoggedIn}
-              onSwitchToSignUp={() => setShowSignUp(true)}
-            />
+            <SignIn onSwitchToSignUp={() => setShowSignUp(true)} />
           )}
         </div>
       )}

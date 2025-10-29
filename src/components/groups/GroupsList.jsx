@@ -19,8 +19,6 @@ export default function GroupsList({
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-
-  // Simple search state
   const [searchQuery, setSearchQuery] = useState("");
 
   // Advanced search parameters (3+)

@@ -16,15 +16,15 @@ export default function CanvasDrawing({ onSave, onCancel }) {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    
+
     // Set canvas size
     canvas.width = 600;
     canvas.height = 400;
-    
+
     // Set white background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Set initial drawing style
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -34,10 +34,10 @@ export default function CanvasDrawing({ onSave, onCancel }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
-    
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     ctx.beginPath();
     ctx.moveTo(x, y);
     setIsDrawing(true);
@@ -45,14 +45,14 @@ export default function CanvasDrawing({ onSave, onCancel }) {
 
   const draw = (e) => {
     if (!isDrawing) return;
-    
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
-    
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     // Set drawing style based on tool
     if (tool === "eraser") {
       ctx.strokeStyle = "#ffffff";
@@ -61,7 +61,7 @@ export default function CanvasDrawing({ onSave, onCancel }) {
       ctx.strokeStyle = color;
       ctx.lineWidth = brushSize;
     }
-    
+
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -73,17 +73,17 @@ export default function CanvasDrawing({ onSave, onCancel }) {
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    
+
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
   const handleSave = () => {
     const canvas = canvasRef.current;
-    
+
     // Convert canvas to data URL (base64 image)
     const dataURL = canvas.toDataURL("image/png");
-    
+
     // Pass the image data to parent
     onSave(dataURL);
   };
@@ -131,14 +131,14 @@ export default function CanvasDrawing({ onSave, onCancel }) {
               onClick={() => setTool("brush")}
               title="Brush"
             >
-              🖌️ Brush
+              Brush
             </button>
             <button
               className={`tool-btn ${tool === "eraser" ? "active" : ""}`}
               onClick={() => setTool("eraser")}
               title="Eraser"
             >
-              🧹 Eraser
+              Eraser
             </button>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function CanvasDrawing({ onSave, onCancel }) {
         <div className="tool-section">
           <div className="action-buttons">
             <button className="clear-btn" onClick={clearCanvas}>
-              🗑️ Clear
+              Clear
             </button>
             <button className="cancel-btn" onClick={onCancel}>
               Cancel
@@ -194,7 +194,10 @@ export default function CanvasDrawing({ onSave, onCancel }) {
 
       {/* Drawing Tips */}
       <div className="canvas-tips">
-        <p>💡 <strong>Tips:</strong> Use your mouse to draw. Choose colors and brush sizes to create your artwork!</p>
+        <p>
+          💡 <strong>Tips:</strong> Use your mouse to draw. Choose colors and
+          brush sizes to create your artwork!
+        </p>
       </div>
     </div>
   );
