@@ -25,10 +25,7 @@ export default function Dashboard() {
       if (currentUser) {
         await initializeUserData(currentUser);
         setUser(currentUser);
-        socketService.connect(
-          currentUser.uid,
-          currentUser.displayName || currentUser.email.split("@")[0]
-        );
+        socketService.connect(currentUser.uid);
       } else {
         setUser(null);
         socketService.disconnect();

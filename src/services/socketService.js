@@ -6,7 +6,7 @@ class SocketService {
     this.listeners = new Map();
   }
 
-  connect(userId, userName) {
+  connect(userId) {
     if (this.socket?.connected) {
       console.log("Already connected to chat server");
       return this.socket;
