@@ -20,7 +20,7 @@ export default function FloatingChat({ currentUser }) {
     const unsubscribe = onValue(usersRef, (snapshot) => {
       if (snapshot.exists()) {
         setUsersData(snapshot.val());
-        console.log("📸 Users data loaded with profile pictures");
+        console.log("Users data loaded with profile pictures");
       }
     });
 
