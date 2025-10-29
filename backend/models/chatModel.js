@@ -1,51 +1,48 @@
-class Group {
+class Message {
   constructor(data) {
     this.id = data.id || null;
-    this.name = data.name;
-    this.description = data.description || "";
-    this.adminId = data.adminId;
-    this.adminName = data.adminName;
-    this.members = data.members || {};
-    this.pendingMembers = data.pendingMembers || {};
-    this.posts = data.posts || {};
-    this.isPrivate = data.isPrivate || false;
-    this.createdAt = data.createdAt || Date.now();
-    this.updatedAt = Date.now();
+    this.senderId = data.senderId;
+    this.senderName = data.senderName;
+    this.receiverId = data.receiverId;
+    this.receiverName = data.receiverName;
+    this.message = data.message;
+    this.timestamp = data.timestamp || Date.now();
+    this.read = data.read || false;
   }
 
   toJSON() {
     return {
       id: this.id,
-      name: this.name,
-      description: this.description,
-      adminId: this.adminId,
-      adminName: this.adminName,
-      members: this.members,
-      pendingMembers: this.pendingMembers,
-      posts: this.posts,
-      isPrivate: this.isPrivate,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      senderId: this.senderId,
+      senderName: this.senderName,
+      receiverId: this.receiverId,
+      receiverName: this.receiverName,
+      message: this.message,
+      timestamp: this.timestamp,
+      read: this.read,
     };
   }
-
   static validate(data) {
     const errors = [];
 
-    if (!data.name || data.name.trim().length === 0) {
-      errors.push("Group name is required");
+    if (!data.senderId) {
+      errors.push("Sender ID is required");
     }
-    if (data.name && data.name.length > 100) {
-      errors.push("Group name is too long (max 100 characters)");
+
+    if (!data.receiverId) {
+      errors.push("Receiver ID is required");
     }
-    if (data.description && data.description.length > 500) {
-      errors.push("Description is too long (max 500 characters)");
+
+    if (!data.message || data.message.trim().length === 0) {
+      errors.push("Message is required");
     }
-    if (!data.adminId) {
-      errors.push("Admin ID is required");
+
+    if (data.message && data.message.length > 1000) {
+      errors.push("Message is too long (max 1000 characters)");
     }
+
     return errors;
   }
 }
 
-module.exports = Group;
+module.exports = Message;

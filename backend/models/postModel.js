@@ -1,5 +1,3 @@
-const { db } = require("../config/firebase");
-
 class Post {
   constructor(data) {
     this.id = data.id || null;

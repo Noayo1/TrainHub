@@ -1,5 +1,3 @@
-const { db } = require("../config/firebase");
-
 class User {
   constructor(data) {
     this.uid = data.uid;
