@@ -8,11 +8,11 @@ class SocketService {
 
   connect(userId, userName) {
     if (this.socket?.connected) {
-      console.log("✅ Already connected to chat server");
+      console.log("Already connected to chat server");
       return this.socket;
     }
 
-    console.log("🔌 Connecting to chat server...");
+    console.log("Connecting to chat server...");
     this.socket = io("http://localhost:5000", {
       transports: ["websocket", "polling"],
       reconnection: true,
@@ -38,7 +38,7 @@ class SocketService {
 
   disconnect() {
     if (this.socket) {
-      console.log("🔌 Disconnecting from chat server...");
+      console.log("Disconnecting from chat server...");
       this.socket.disconnect();
       this.socket = null;
       this.listeners.clear();
