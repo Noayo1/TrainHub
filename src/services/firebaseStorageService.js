@@ -1,3 +1,6 @@
+// firebaseStorageService.js - OPTIMIZED VERSION with Image Compression
+// Fixes slow uploads by compressing images before upload!
+
 import { storage } from "../components/firebase";
 import {
   ref,
@@ -9,8 +12,8 @@ import {
 class FirebaseStorageService {
   /**
    * Compress image before upload (makes uploads MUCH faster!)
-   * @param {File} file
-   * @returns {Promise<File>}
+   * @param {File} file - Image file to compress
+   * @returns {Promise<File>} Compressed image file
    */
   async compressImage(file) {
     return new Promise((resolve) => {
@@ -37,7 +40,6 @@ class FirebaseStorageService {
 
           canvas.width = width;
           canvas.height = height;
-
           ctx.drawImage(img, 0, 0, width, height);
           canvas.toBlob(
             (blob) => {
@@ -78,10 +80,10 @@ class FirebaseStorageService {
         reject(new Error("No file provided"));
         return;
       }
-
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(7);
       const filename = `${folder}/${timestamp}_${randomId}_${file.name}`;
+
       const storageRef = ref(storage, filename);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -123,11 +125,11 @@ class FirebaseStorageService {
 
     for (let i = 0; i < files.length; i++) {
       let file = files[i];
-
       if (!file.type.startsWith("image/")) {
         throw new Error(`${file.name} is not an image`);
       }
-      console.log(` Compressing image ${i + 1}/${totalFiles}...`);
+
+      console.log(`🔄 Compressing image ${i + 1}/${totalFiles}...`);
       file = await this.compressImage(file);
 
       const url = await this.uploadFile(file, "posts/images", (progress) => {
@@ -181,4 +183,5 @@ class FirebaseStorageService {
   }
 }
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default new FirebaseStorageService();
