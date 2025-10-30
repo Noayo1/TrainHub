@@ -106,25 +106,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-exports.deleteUser = async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const snapshot = await db.ref(`users/${userId}`).once("value");
-    if (!snapshot.exists()) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    await db.ref(`users/${userId}`).remove();
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (error) {
-    res.status(500).json({
-      error: "Failed to delete user",
-      message: error.message,
-    });
-  }
-};
-
 exports.searchUsers = async (req, res) => {
   try {
     const { displayName, email, role, friendsCount } = req.query;
