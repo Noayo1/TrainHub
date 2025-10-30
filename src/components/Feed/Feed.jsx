@@ -135,18 +135,32 @@ export default function Feed() {
       return;
     }
 
+    let mediaType = "text";
+    if (imageUrls && imageUrls.length > 0) {
+      mediaType = "image";
+    } else if (videoUrl) {
+      mediaType = "video";
+    } else if (drawingImage) {
+      mediaType = "canvas";
+    }
+
     const postData = {
       content: newPostContent || "",
-      drawingImage: drawingImage || null,
+      canvasImage: drawingImage || null,
       imageUrls: imageUrls || null,
       videoUrl: videoUrl || null,
+      mediaType: mediaType,
       authorId: currentUser.uid,
       authorName: currentUser.displayName || currentUser.email.split("@")[0],
+      authorEmail: currentUser.email,
+      timestamp: Date.now(),
+      likes: 0,
+      likedBy: {},
+      comments: {},
     };
 
     try {
       await postAPI.createPost(postData);
-      alert("Post created successfully!");
     } catch (error) {
       console.error("Error creating post:", error);
       alert("Failed to create post: " + error.message);

@@ -103,7 +103,7 @@ class FirebaseStorageService {
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log("✅ File uploaded:", downloadURL);
+            console.log("File uploaded:", downloadURL);
             resolve(downloadURL);
           } catch (error) {
             reject(error);
@@ -129,7 +129,7 @@ class FirebaseStorageService {
         throw new Error(`${file.name} is not an image`);
       }
 
-      console.log(`🔄 Compressing image ${i + 1}/${totalFiles}...`);
+      console.log(`Compressing image ${i + 1}/${totalFiles}...`);
       file = await this.compressImage(file);
 
       const url = await this.uploadFile(file, "posts/images", (progress) => {
@@ -163,7 +163,7 @@ class FirebaseStorageService {
     try {
       const fileRef = ref(storage, url);
       await deleteObject(fileRef);
-      console.log("✅ File deleted");
+      console.log("File deleted");
     } catch (error) {
       console.error("Error deleting file:", error);
     }

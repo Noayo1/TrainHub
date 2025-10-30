@@ -12,12 +12,24 @@ exports.createPost = async (req, res) => {
 
     const postRef = db.ref("posts").push();
     postData.id = postRef.key;
-    postData.timestamp = Date.now();
-    postData.likes = 0;
-    postData.likedBy = {};
-    postData.comments = {};
+
+    if (!postData.timestamp && !postData.createdAt) {
+      postData.timestamp = Date.now();
+      postData.createdAt = Date.now();
+    }
+
+    if (typeof postData.likes === "undefined") {
+      postData.likes = 0;
+    }
+    if (!postData.likedBy) {
+      postData.likedBy = {};
+    }
+    if (!postData.comments) {
+      postData.comments = {};
+    }
 
     const post = new Post(postData);
+
     await postRef.set(post.toJSON());
 
     res.status(201).json({
@@ -25,9 +37,11 @@ exports.createPost = async (req, res) => {
       post: post.toJSON(),
     });
   } catch (error) {
+    console.error("Error in createPost:", error);
     res.status(500).json({
       error: "Failed to create post",
       message: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };
@@ -71,7 +85,9 @@ exports.getAllPosts = async (req, res) => {
       posts = posts.filter((post) => post.groupId === groupId);
     }
 
-    posts.sort((a, b) => b.createdAt - a.createdAt);
+    posts.sort(
+      (a, b) => (b.createdAt || b.timestamp) - (a.createdAt || a.timestamp)
+    );
 
     if (limit) {
       posts = posts.slice(0, parseInt(limit));
@@ -184,19 +200,23 @@ exports.searchPosts = async (req, res) => {
 
     if (startDate) {
       const start = new Date(startDate).getTime();
-      posts = posts.filter((post) => post.createdAt >= start);
+      posts = posts.filter(
+        (post) => (post.createdAt || post.timestamp) >= start
+      );
     }
 
     if (endDate) {
       const end = new Date(endDate).getTime();
-      posts = posts.filter((post) => post.createdAt <= end);
+      posts = posts.filter((post) => (post.createdAt || post.timestamp) <= end);
     }
 
     if (groupId) {
       posts = posts.filter((post) => post.groupId === groupId);
     }
 
-    posts.sort((a, b) => b.createdAt - a.createdAt);
+    posts.sort(
+      (a, b) => (b.createdAt || b.timestamp) - (a.createdAt || a.timestamp)
+    );
 
     res.status(200).json({
       posts,
