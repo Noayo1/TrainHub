@@ -43,11 +43,6 @@ export const userAPI = {
       body: JSON.stringify(updates),
     }),
 
-  deleteUser: (userId) =>
-    apiRequest(`/users/${userId}`, {
-      method: "DELETE",
-    }),
-
   searchUsers: (params) => {
     const query = new URLSearchParams(params).toString();
     return apiRequest(`/users/search/advanced?${query}`);
